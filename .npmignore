@@ -1,0 +1,47 @@
+# Source
+src/
+
+# Tests
+__tests__/
+coverage/
+*.spec.*
+vitest.config.*
+
+# Config files
+.gitignore
+.npmignore
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Development
+node_modules/
+.github/
+docs/
+examples/
+
+# npm pack
+*.tgz

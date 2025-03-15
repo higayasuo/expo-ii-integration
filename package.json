@@ -1,0 +1,69 @@
+{
+  "name": "expo-ii-integration",
+  "version": "1.0.0",
+  "description": "Expo library to enable smartphone native applications to invoke Internet Identity through a web application",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/expo-ii-integration.umd.cjs",
+  "module": "./dist/expo-ii-integration.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/expo-ii-integration.js",
+      "require": "./dist/expo-ii-integration.umd.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "test:watch": "vitest watch",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/higayasuo/expo-ii-integration.git"
+  },
+  "bugs": {
+    "url": "https://github.com/higayasuo/expo-ii-integration/issues"
+  },
+  "homepage": "https://github.com/higayasuo/expo-ii-integration#readme",
+  "keywords": [
+    "expo",
+    "internet-identity",
+    "dfinity",
+    "icp"
+  ],
+  "author": "Higa Yasuo",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.28",
+    "@types/react": "^18.3.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^1.4.0",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6",
+    "vite-plugin-dts": "^3.7.3",
+    "vitest": "^1.4.0"
+  },
+  "dependencies": {
+    "@dfinity/identity": "^2.3.0",
+    "@higayasuo/iframe-messenger": "^0.1.0",
+    "canister-manager": "^0.1.3",
+    "expo-storage-universal": "^0.1.0",
+    "react": "18.3.1"
+  },
+  "peerDependencies": {
+    "expo-linking": "~7.0.5",
+    "expo-router": "~4.0.17",
+    "expo-web-browser": "~14.0.2",
+    "react-native": "0.76.7"
+  }
+}
