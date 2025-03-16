@@ -1,17 +1,31 @@
 import React, { createContext, useContext } from 'react';
-import { useIIIntegration } from '../hooks/useIIIntegration';
+import { DelegationIdentity } from '@dfinity/identity';
 
-type IIIntegrationContextType = ReturnType<typeof useIIIntegration>;
+// Define the context type explicitly
+export interface IIIntegrationContextType {
+  identity: DelegationIdentity | undefined;
+  isReady: boolean;
+  isAuthenticated: boolean;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
+  pathWhenLogin: string | undefined;
+  authError: unknown | undefined;
+}
 
-const IIIntegrationContext = createContext<
-  IIIntegrationContextType | undefined
->(undefined);
+let IIIntegrationContext: React.Context<IIIntegrationContextType | undefined>;
 
-export function useIIIntegrationContext() {
-  const context = useContext(IIIntegrationContext);
+function getContext() {
+  if (!IIIntegrationContext) {
+    IIIntegrationContext = createContext<IIIntegrationContextType | undefined>(undefined);
+  }
+  return IIIntegrationContext;
+}
+
+export function useIIIntegrationContext(): IIIntegrationContextType {
+  const context = useContext(getContext());
   if (context === undefined) {
     throw new Error(
-      'useIIIntegrationAuthContext must be used within an IIIntegrationAuthProvider',
+      'useIIIntegrationContext must be used within an IIIntegrationProvider',
     );
   }
   return context;
@@ -26,9 +40,10 @@ export function IIIntegrationProvider({
   children,
   value,
 }: IIIntegrationProviderProps) {
+  const Context = getContext();
   return (
-    <IIIntegrationContext.Provider value={value}>
+    <Context.Provider value={value}>
       {children}
-    </IIIntegrationContext.Provider>
+    </Context.Provider>
   );
 }

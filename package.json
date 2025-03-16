@@ -1,19 +1,18 @@
 {
   "name": "expo-ii-integration",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Expo library to enable smartphone native applications to invoke Internet Identity through a web application",
   "type": "module",
   "files": [
     "dist"
   ],
-  "main": "./dist/expo-ii-integration.umd.cjs",
-  "module": "./dist/expo-ii-integration.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/expo-ii-integration.js",
-      "require": "./dist/expo-ii-integration.umd.cjs",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
@@ -41,8 +40,8 @@
     "dfinity",
     "icp"
   ],
-  "author": "Higa Yasuo",
-  "license": "ISC",
+  "author": "Yasuo Higa",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.11.28",
     "@types/react": "^18.3.2",
@@ -54,16 +53,17 @@
     "vitest": "^1.4.0"
   },
   "dependencies": {
-    "@dfinity/identity": "^2.3.0",
-    "@higayasuo/iframe-messenger": "^0.1.0",
     "canister-manager": "^0.1.3",
     "expo-storage-universal": "^0.1.0",
-    "react": "18.3.1"
+    "react": "18.3.1",
+    "@higayasuo/iframe-messenger": "^0.1.0"
   },
   "peerDependencies": {
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.17",
     "expo-web-browser": "~14.0.2",
-    "react-native": "0.76.7"
+    "react-native": "0.76.7",
+    "@dfinity/agent": "^0.20.2",
+    "@dfinity/identity": "^0.20.2"
   }
 }

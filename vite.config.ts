@@ -6,20 +6,27 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'ExpoIIIntegration',
-      fileName: 'expo-ii-integration',
-      formats: ['es', 'umd']
+      entry: {
+        'index': resolve(__dirname, 'src/index.ts'),
+      },
+      formats: ['es']
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        }
-      }
+      external: [
+        'react',
+        'react-native',
+        'expo-linking',
+        'expo-web-browser',
+        'expo-router',
+        '@react-native-async-storage/async-storage',
+        'expo-secure-store',
+        '@dfinity/agent',
+        '@dfinity/identity'
+      ]
     }
   },
-  plugins: [react(), dts()]
+  plugins: [
+    react(),
+    dts({ rollupTypes: true })
+  ]
 });

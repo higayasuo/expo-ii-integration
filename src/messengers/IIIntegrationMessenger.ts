@@ -1,11 +1,11 @@
 import { IframeMessenger, type ErrorFunc } from '@higayasuo/iframe-messenger';
 
-type IIIntegrationSuccessResponse = {
+export type IIIntegrationSuccessResponse = {
   kind: 'success';
   delegation: string;
 };
 
-type IIIntegrationResponse = IIIntegrationSuccessResponse;
+export type IIIntegrationResponse = IIIntegrationSuccessResponse;
 
 export class IIIntegrationMessenger extends IframeMessenger<IIIntegrationResponse> {
   constructor(errorFunc: ErrorFunc = console.error) {

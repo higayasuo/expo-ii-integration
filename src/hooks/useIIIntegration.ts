@@ -17,8 +17,6 @@ import {
 import { identityFromDelegation } from '../storage/identityUtils';
 import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 
-const iiIntegrationMessenger = new IIIntegrationMessenger();
-
 export type UseIIAuthParams = {
   localIPAddress: string;
   dfxNetwork: string;
@@ -38,6 +36,7 @@ export function useIIIntegration({
     undefined,
   );
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
+  const iiIntegrationMessengerRef = useRef<IIIntegrationMessenger | undefined>(undefined);
 
   // Login path management
   const currentPath = usePathname();
@@ -145,13 +144,16 @@ export function useIIIntegration({
       url.searchParams.set('ii_uri', iiUri);
 
       if (Platform.OS === 'web') {
-        iiIntegrationMessenger.on('success', async (response) => {
+        const messenger = new IIIntegrationMessenger();
+        iiIntegrationMessengerRef.current = messenger;
+        messenger.on('success', async (response) => {
           console.log('IIIntegration success');
           await setupIdentityFromDelegation(response.delegation);
-          iiIntegrationMessenger.close();
+          messenger.close();
+          iiIntegrationMessengerRef.current = undefined;
         });
 
-        await iiIntegrationMessenger.open({
+        await messenger.open({
           url: url.toString(),
         });
       } else {
