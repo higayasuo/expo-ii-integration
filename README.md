@@ -1,14 +1,18 @@
 # expo-ii-integration
 
-This library enables smartphone native applications to authenticate with Internet Identity through a web application bridge. It provides a seamless integration between Expo applications and Internet Identity authentication.
+This library enables smartphone native applications to authenticate with Internet Identity through a web application bridge. It provides a seamless integration between Expo applications and Internet Identity authentication, with different authentication flows for web and native platforms.
 
 ## Features
 
 - Seamless Internet Identity authentication in Expo apps
-- Secure delegation chain management
-- Platform-agnostic storage handling
-- React hooks and context for easy integration
-- Support for both web and native platforms
+- Platform-specific authentication flows:
+  - Web: Modal-based authentication using iframe messaging
+  - Native: Browser-based authentication using Expo WebBrowser
+- Secure key and delegation chain management
+- Platform-agnostic secure storage handling
+- Type-safe React hooks and context
+- Automatic path restoration after authentication
+- Error handling and state management
 
 ## Installation
 
@@ -18,22 +22,12 @@ npm install expo-ii-integration
 
 ### Dependencies
 
-This package has the following dependencies:
+This package has the following peer dependencies that you need to install:
 
 ```json
 {
-  "@dfinity/identity": "^2.3.0",
-  "@higayasuo/iframe-messenger": "^0.1.0",
-  "canister-manager": "^0.1.3",
-  "expo-storage-universal": "^0.1.0",
-  "react": "18.3.1"
-}
-```
-
-And requires these peer dependencies:
-
-```json
-{
+  "@dfinity/agent": "^0.20.2",
+  "@dfinity/identity": "^0.20.2",
   "expo-linking": "~7.0.5",
   "expo-router": "~4.0.17",
   "expo-web-browser": "~14.0.2",
@@ -66,13 +60,23 @@ function App() {
 }
 ```
 
-### Using the Authentication Hook
+### Using the Authentication Context
 
 ```tsx
 import { useIIIntegrationContext } from 'expo-ii-integration';
 
 function AuthButton() {
-  const { login, logout, isAuthenticated } = useIIIntegrationContext();
+  const {
+    login,
+    logout,
+    isAuthenticated,
+    isReady,
+    identity,
+    pathWhenLogin, // Path to restore after login
+    authError
+  } = useIIIntegrationContext();
+
+  if (!isReady) return null;
 
   return (
     <Button
@@ -93,52 +97,56 @@ The main hook for Internet Identity integration.
 
 ```typescript
 type UseIIAuthParams = {
-  localIPAddress: string;
-  dfxNetwork: string;
-  iiIntegrationCanisterId: string;
-  iiCanisterId: string;
+  localIPAddress: string;     // Local IP address for development
+  dfxNetwork: string;         // dfx network (e.g., 'local', 'ic')
+  iiIntegrationCanisterId: string;  // II Integration canister ID
+  iiCanisterId: string;       // Internet Identity canister ID
 };
 ```
 
 #### Returns
 
 ```typescript
-{
-  identity: DelegationIdentity | undefined;
-  isReady: boolean;
-  isAuthenticated: boolean;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
-  pathWhenLogin: string | undefined;
-  authError: unknown | undefined;
+interface IIIntegrationContextType {
+  identity: DelegationIdentity | undefined;  // Current user identity
+  isReady: boolean;                         // Authentication state is initialized
+  isAuthenticated: boolean;                 // User is authenticated
+  login: () => Promise<void>;               // Trigger login flow
+  logout: () => Promise<void>;              // Clear authentication
+  pathWhenLogin: string | undefined;        // Path to restore after login
+  authError: unknown | undefined;           // Authentication errors
 }
 ```
 
-### IIIntegrationProvider
+### Storage Utilities
 
-A context provider component for sharing authentication state.
+The library provides secure storage utilities for managing authentication state:
 
-```typescript
-type IIIntegrationProviderProps = {
-  children: React.ReactNode;
-  value: ReturnType<typeof useIIIntegration>;
-};
-```
+- `appKeyUtils`: Manages Ed25519 key pairs for identity
+- `delegationUtils`: Handles delegation chain storage and validation
+- `identityUtils`: Creates DelegationIdentity instances
 
-## Security
+All storage operations use platform-specific secure storage through `expo-storage-universal`.
 
-The library implements several security measures:
+## Platform-Specific Behavior
 
-- Secure storage of app keys using platform-specific secure storage
-- Delegation chain validation
-- Automatic delegation renewal
-- Secure communication between native app and web integration
+### Web
+- Uses modal-based authentication with iframe messaging
+- Handles authentication flow within the same window
+- Maintains application state during authentication
 
-## Platform Support
+### Native (iOS/Android)
+- Opens authentication in the system browser
+- Uses URL scheme for authentication callback
+- Automatically restores application state after authentication
 
-- iOS
-- Android
-- Web (through Expo)
+## Security Features
+
+- Secure storage of Ed25519 key pairs
+- Delegation chain validation and automatic cleanup
+- Origin validation for web messaging
+- Platform-specific secure storage implementations
+- Type-safe interfaces and runtime validations
 
 ## Contributing
 
