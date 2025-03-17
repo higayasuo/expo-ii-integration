@@ -36,7 +36,9 @@ export function useIIIntegration({
     undefined,
   );
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
-  const iiIntegrationMessengerRef = useRef<IIIntegrationMessenger | undefined>(undefined);
+  const iiIntegrationMessengerRef = useRef<IIIntegrationMessenger | undefined>(
+    undefined,
+  );
 
   // Login path management
   const currentPath = usePathname();
@@ -44,9 +46,19 @@ export function useIIIntegration({
 
   const savePathWhenLogin = useCallback(() => {
     console.log('Saving path when login:', currentPath);
-    if (!currentPath) return;
+
+    if (!currentPath) {
+      return;
+    }
+
     pathWhenLoginRef.current = currentPath;
   }, [currentPath]);
+
+  const clearPathWhenLogin = useCallback(() => {
+    console.log('Clearing path when login:', pathWhenLoginRef.current);
+
+    pathWhenLoginRef.current = undefined;
+  }, []);
 
   // Initialize auth state
   useEffect(() => {
@@ -182,6 +194,7 @@ export function useIIIntegration({
     login,
     logout,
     pathWhenLogin: pathWhenLoginRef.current,
+    clearPathWhenLogin,
     authError,
   };
 }

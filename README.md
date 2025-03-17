@@ -11,7 +11,9 @@ This library enables smartphone native applications to authenticate with Interne
 - Secure key and delegation chain management
 - Platform-agnostic secure storage handling
 - Type-safe React hooks and context
-- Automatic path restoration after authentication
+- Path tracking utilities for authentication flow:
+  - `pathWhenLogin`: Tracks the path when authentication was initiated
+  - `clearPathWhenLogin()`: Utility to clear the saved path
 - Error handling and state management
 
 ## Installation
@@ -49,7 +51,7 @@ function App() {
     localIPAddress: '192.168.0.210',
     dfxNetwork: 'local',
     iiIntegrationCanisterId: 'YOUR_II_INTEGRATION_CANISTER_ID',
-    iiCanisterId: 'YOUR_II_CANISTER_ID'
+    iiCanisterId: 'YOUR_II_CANISTER_ID',
   });
 
   return (
@@ -72,8 +74,9 @@ function AuthButton() {
     isAuthenticated,
     isReady,
     identity,
-    pathWhenLogin, // Path to restore after login
-    authError
+    pathWhenLogin,
+    clearPathWhenLogin,
+    authError,
   } = useIIIntegrationContext();
 
   if (!isReady) return null;
@@ -87,6 +90,32 @@ function AuthButton() {
 }
 ```
 
+### Path Restoration Example
+
+```tsx
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import { useIIIntegrationContext } from 'expo-ii-integration';
+
+function AuthenticationHandler() {
+  const router = useRouter();
+  const { isAuthenticated, pathWhenLogin, clearPathWhenLogin } =
+    useIIIntegrationContext();
+
+  // Handle path restoration after authentication
+  useEffect(() => {
+    if (isAuthenticated && pathWhenLogin) {
+      // Navigate back to the path where login was initiated
+      router.replace(pathWhenLogin);
+      // Clear the saved path
+      clearPathWhenLogin();
+    }
+  }, [isAuthenticated, pathWhenLogin, router, clearPathWhenLogin]);
+
+  return null;
+}
+```
+
 ## API Reference
 
 ### useIIIntegration Hook
@@ -97,10 +126,10 @@ The main hook for Internet Identity integration.
 
 ```typescript
 type UseIIAuthParams = {
-  localIPAddress: string;     // Local IP address for development
-  dfxNetwork: string;         // dfx network (e.g., 'local', 'ic')
-  iiIntegrationCanisterId: string;  // II Integration canister ID
-  iiCanisterId: string;       // Internet Identity canister ID
+  localIPAddress: string; // Local IP address for development
+  dfxNetwork: string; // dfx network (e.g., 'local', 'ic')
+  iiIntegrationCanisterId: string; // II Integration canister ID
+  iiCanisterId: string; // Internet Identity canister ID
 };
 ```
 
@@ -108,13 +137,14 @@ type UseIIAuthParams = {
 
 ```typescript
 interface IIIntegrationContextType {
-  identity: DelegationIdentity | undefined;  // Current user identity
-  isReady: boolean;                         // Authentication state is initialized
-  isAuthenticated: boolean;                 // User is authenticated
-  login: () => Promise<void>;               // Trigger login flow
-  logout: () => Promise<void>;              // Clear authentication
-  pathWhenLogin: string | undefined;        // Path to restore after login
-  authError: unknown | undefined;           // Authentication errors
+  identity: DelegationIdentity | undefined; // Current user identity
+  isReady: boolean; // Authentication state is initialized
+  isAuthenticated: boolean; // User is authenticated
+  login: () => Promise<void>; // Trigger login flow
+  logout: () => Promise<void>; // Clear authentication
+  pathWhenLogin: string | undefined; // Path when login was initiated
+  clearPathWhenLogin: () => void; // Clear the saved path
+  authError: unknown | undefined; // Authentication errors
 }
 ```
 
@@ -131,14 +161,16 @@ All storage operations use platform-specific secure storage through `expo-storag
 ## Platform-Specific Behavior
 
 ### Web
+
 - Uses modal-based authentication with iframe messaging
 - Handles authentication flow within the same window
 - Maintains application state during authentication
 
 ### Native (iOS/Android)
+
 - Opens authentication in the system browser
 - Uses URL scheme for authentication callback
-- Automatically restores application state after authentication
+- Provides utilities to restore application state after authentication
 
 ## Security Features
 

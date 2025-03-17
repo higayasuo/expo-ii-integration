@@ -9,20 +9,18 @@ export interface IIIntegrationContextType {
   login: () => Promise<void>;
   logout: () => Promise<void>;
   pathWhenLogin: string | undefined;
+  clearPathWhenLogin: () => void;
   authError: unknown | undefined;
 }
 
-let IIIntegrationContext: React.Context<IIIntegrationContextType | undefined>;
+// Create the context with undefined as default value
+const IIIntegrationContext = createContext<
+  IIIntegrationContextType | undefined
+>(undefined);
 
-function getContext() {
-  if (!IIIntegrationContext) {
-    IIIntegrationContext = createContext<IIIntegrationContextType | undefined>(undefined);
-  }
-  return IIIntegrationContext;
-}
-
+// Hook to use the context
 export function useIIIntegrationContext(): IIIntegrationContextType {
-  const context = useContext(getContext());
+  const context = useContext(IIIntegrationContext);
   if (context === undefined) {
     throw new Error(
       'useIIIntegrationContext must be used within an IIIntegrationProvider',
@@ -31,6 +29,7 @@ export function useIIIntegrationContext(): IIIntegrationContextType {
   return context;
 }
 
+// Provider component
 interface IIIntegrationProviderProps {
   children: React.ReactNode;
   value: IIIntegrationContextType;
@@ -40,10 +39,9 @@ export function IIIntegrationProvider({
   children,
   value,
 }: IIIntegrationProviderProps) {
-  const Context = getContext();
   return (
-    <Context.Provider value={value}>
+    <IIIntegrationContext.Provider value={value}>
       {children}
-    </Context.Provider>
+    </IIIntegrationContext.Provider>
   );
 }
