@@ -148,6 +148,20 @@ interface IIIntegrationContextType {
 }
 ```
 
+### API Methods
+
+#### login()
+
+Initiates the authentication flow. On web, this opens a modal with Internet Identity. On native platforms, it opens the system browser. Before initiating login, it automatically saves the current path.
+
+#### logout()
+
+Clears the current authentication state by removing the delegation chain from storage.
+
+#### clearPathWhenLogin()
+
+Clears the saved path that was stored during login. This is useful after you've restored the user to their original location.
+
 ### Storage Utilities
 
 The library provides secure storage utilities for managing authentication state:
