@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toHex } from '@dfinity/agent';
-import { DelegationIdentity } from '@dfinity/identity';
+import {
+  DelegationChain,
+  DelegationIdentity,
+  Ed25519KeyIdentity,
+} from '@dfinity/identity';
 import * as WebBrowser from 'expo-web-browser';
 import { useURL, createURL } from 'expo-linking';
 import { usePathname } from 'expo-router';
@@ -8,20 +12,17 @@ import { Platform } from 'react-native';
 
 import { CanisterManager } from 'canister-manager';
 
-import { getAppKey, findAppKey, generateAppKey } from '../storage/appKeyUtils';
-import {
-  findValidDelegation,
-  saveDelegation,
-  removeDelegation,
-} from '../storage/delegationUtils';
-import { identityFromDelegation } from '../storage/identityUtils';
 import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 
 export type UseIIAuthParams = {
   localIPAddress: string;
   dfxNetwork: string;
   iiIntegrationCanisterId: string;
   iiCanisterId: string;
+  appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
+  delegationStorage: DelegationChainValueStorageWrapper;
 };
 
 export function useIIIntegration({
@@ -29,6 +30,8 @@ export function useIIIntegration({
   dfxNetwork,
   iiIntegrationCanisterId,
   iiCanisterId,
+  appKeyStorage,
+  delegationStorage,
 }: UseIIAuthParams) {
   const [isReady, setIsReady] = useState(false);
   const url = useURL();
@@ -74,8 +77,8 @@ export function useIIIntegration({
 
     (async () => {
       try {
-        const appKey = await findAppKey();
-        const delegation = await findValidDelegation();
+        const appKey = await appKeyStorage.find();
+        const delegation = await delegationStorage.find();
 
         if (appKey && delegation) {
           const identity = DelegationIdentity.fromDelegation(
@@ -84,8 +87,9 @@ export function useIIIntegration({
           );
           setIdentity(identity);
         } else if (!appKey) {
-          await generateAppKey();
-          await removeDelegation();
+          const appKey = Ed25519KeyIdentity.generate();
+          await appKeyStorage.save(appKey);
+          await delegationStorage.remove();
         }
       } catch (error) {
         setAuthError(error);
@@ -97,8 +101,10 @@ export function useIIIntegration({
 
   const setupIdentityFromDelegation = async (delegation: string) => {
     console.log('Processing delegation');
-    const delegationChain = await saveDelegation(delegation);
-    const id = await identityFromDelegation(delegationChain);
+    const delegationChain = DelegationChain.fromJSON(delegation);
+    await delegationStorage.save(delegationChain);
+    const appKey = await appKeyStorage.retrieve();
+    const id = DelegationIdentity.fromDelegation(appKey, delegationChain);
     setIdentity(id);
     console.log('identity set from delegation');
   };
@@ -135,7 +141,7 @@ export function useIIIntegration({
       const redirectUri = createURL('/');
       console.log('redirectUri', redirectUri);
 
-      const appKey = await getAppKey();
+      const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
 
       const canisterManager = new CanisterManager({
@@ -149,6 +155,8 @@ export function useIIIntegration({
       const iiIntegrationURL = canisterManager.getFrontendCanisterURL(
         iiIntegrationCanisterId,
       );
+      console.log('iiIntegrationURL', iiIntegrationURL);
+
       const url = new URL(iiIntegrationURL);
 
       url.searchParams.set('redirect_uri', redirectUri);
@@ -179,7 +187,7 @@ export function useIIIntegration({
   const logout = async () => {
     console.log('Logging out');
     try {
-      await removeDelegation();
+      await delegationStorage.remove();
       setIdentity(undefined);
       console.log('identity set to undefined after logout');
     } catch (error) {

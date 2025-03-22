@@ -1,13 +1,13 @@
 # expo-ii-integration
 
-This library enables smartphone native applications to authenticate with Internet Identity through a web application bridge. It provides a seamless integration between Expo applications and Internet Identity authentication, with different authentication flows for web and native platforms.
+This library enables Expo applications (both web and native) to authenticate with Internet Identity through a web application bridge. It provides a seamless integration between Expo applications and Internet Identity authentication, with different authentication flows for web and native platforms.
 
 ## Features
 
 - Seamless Internet Identity authentication in Expo apps
 - Platform-specific authentication flows:
-  - Web: Modal-based authentication using iframe messaging
-  - Native: Browser-based authentication using Expo WebBrowser
+  - Web (PC/Smartphone): Modal-based authentication using iframe messaging
+  - Native (iOS/Android): Browser-based authentication using Expo WebBrowser
 - Secure key and delegation chain management
 - Platform-agnostic secure storage handling
 - Type-safe React hooks and context
@@ -33,6 +33,7 @@ This package has the following peer dependencies that you need to install:
   "expo-linking": "~7.0.5",
   "expo-router": "~4.0.17",
   "expo-web-browser": "~14.0.2",
+  "react": "^18.3.1",
   "react-native": "0.76.7"
 }
 ```
@@ -93,28 +94,80 @@ function AuthButton() {
 ### Path Restoration Example
 
 ```tsx
-import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
+import React from 'react';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { Href, Redirect, Tabs, usePathname } from 'expo-router';
+import { LogIn } from '@/components/LogIn';
+import { LogOut } from '@/components/LogOut';
+import { View, ActivityIndicator } from 'react-native';
 import { useIIIntegrationContext } from 'expo-ii-integration';
 
-function AuthenticationHandler() {
-  const router = useRouter();
-  const { isAuthenticated, pathWhenLogin, clearPathWhenLogin } =
+function TabBarIcon(props: {
+  name: React.ComponentProps<typeof FontAwesome>['name'];
+  color: string;
+}) {
+  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+}
+
+export default function TabLayout() {
+  const { identity, pathWhenLogin, clearPathWhenLogin } =
     useIIIntegrationContext();
+  const pathname = usePathname();
 
-  // Handle path restoration after authentication
-  useEffect(() => {
-    if (isAuthenticated && pathWhenLogin) {
-      // Navigate back to the path where login was initiated
-      router.replace(pathWhenLogin);
-      // Clear the saved path
-      clearPathWhenLogin();
+  if (identity && pathWhenLogin) {
+    clearPathWhenLogin();
+
+    if (pathWhenLogin !== pathname) {
+      console.log('redirecting to', pathWhenLogin);
+      // Show loading indicator while redirecting
+      return (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Redirect href={pathWhenLogin as Href} />
+        </View>
+      );
     }
-  }, [isAuthenticated, pathWhenLogin, router, clearPathWhenLogin]);
+  }
 
-  return null;
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: '#007AFF',
+        headerRight: () => (identity ? <LogOut /> : <LogIn />),
+        headerStyle: {
+          height: 110,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Identity',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="two"
+        options={{
+          title: 'Encryption',
+          tabBarIcon: ({ color }) => <TabBarIcon name="lock" color={color} />,
+        }}
+      />
+    </Tabs>
+  );
 }
 ```
+
+This example shows how to:
+
+- Integrate path restoration with tab navigation
+- Show authentication UI components in the header
+- Compare the current path with the saved path to avoid unnecessary redirects
+- Show a loading indicator during redirection
+- Use the `Redirect` component from expo-router for navigation
+- Clear the saved path after initiating the redirect
 
 ## API Reference
 
@@ -130,6 +183,8 @@ type UseIIAuthParams = {
   dfxNetwork: string; // dfx network (e.g., 'local', 'ic')
   iiIntegrationCanisterId: string; // II Integration canister ID
   iiCanisterId: string; // Internet Identity canister ID
+  appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
+  delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain
 };
 ```
 
@@ -148,29 +203,88 @@ interface IIIntegrationContextType {
 }
 ```
 
+### Storage Classes
+
+#### Ed25519KeyIdentityValueStorageWrapper
+
+A storage wrapper for Ed25519KeyIdentity that handles serialization and deserialization.
+
+```typescript
+class Ed25519KeyIdentityValueStorageWrapper
+  implements StorageWrapper<Ed25519KeyIdentity>
+{
+  constructor(storage: Storage, key: string);
+
+  find(): Promise<Ed25519KeyIdentity | undefined>;
+  retrieve(): Promise<Ed25519KeyIdentity>;
+  save(value: Ed25519KeyIdentity): Promise<void>;
+  remove(): Promise<void>;
+}
+```
+
+#### DelegationChainValueStorageWrapper
+
+A storage wrapper for DelegationChain that includes automatic validation.
+
+```typescript
+class DelegationChainValueStorageWrapper
+  implements StorageWrapper<DelegationChain>
+{
+  constructor(storage: Storage, key: string);
+
+  find(): Promise<DelegationChain | undefined>;
+  retrieve(): Promise<DelegationChain>;
+  save(value: DelegationChain): Promise<void>;
+  remove(): Promise<void>;
+}
+```
+
+#### AppKeyStorage
+
+A specialized wrapper for storing the application's Ed25519KeyIdentity.
+
+```typescript
+class AppKeyStorage extends Ed25519KeyIdentityValueStorageWrapper {
+  constructor(storage: Storage);
+}
+```
+
+#### DelegationStorage
+
+A specialized wrapper for storing the application's DelegationChain.
+
+```typescript
+class DelegationStorage extends DelegationChainValueStorageWrapper {
+  constructor(storage: Storage);
+}
+```
+
 ### API Methods
 
 #### login()
 
-Initiates the authentication flow. On web, this opens a modal with Internet Identity. On native platforms, it opens the system browser. Before initiating login, it automatically saves the current path.
+Initiates the authentication flow:
+
+- On web: Opens a modal with Internet Identity using iframe messaging
+- On native: Opens the system browser using Expo WebBrowser
+- Automatically saves the current path before initiating login
+- Handles platform-specific authentication flows
 
 #### logout()
 
-Clears the current authentication state by removing the delegation chain from storage.
+Clears the current authentication state:
+
+- Removes the delegation chain from storage
+- Clears the identity state
+- Maintains the app key for future authentication
 
 #### clearPathWhenLogin()
 
-Clears the saved path that was stored during login. This is useful after you've restored the user to their original location.
+Clears the saved path that was stored during login:
 
-### Storage Utilities
-
-The library provides secure storage utilities for managing authentication state:
-
-- `appKeyUtils`: Manages Ed25519 key pairs for identity
-- `delegationUtils`: Handles delegation chain storage and validation
-- `identityUtils`: Creates DelegationIdentity instances
-
-All storage operations use platform-specific secure storage through `expo-storage-universal`.
+- Used after restoring the user to their original location
+- Prevents unnecessary redirects
+- Helps maintain a smooth navigation flow
 
 ## Platform-Specific Behavior
 
