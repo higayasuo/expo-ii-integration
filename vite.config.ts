@@ -7,9 +7,10 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        'index': resolve(__dirname, 'src/index.ts'),
+        index: resolve(__dirname, 'src/index.ts'),
       },
-      formats: ['es']
+      formats: ['es', 'cjs'],
+      fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`,
     },
     rollupOptions: {
       external: [
@@ -18,15 +19,10 @@ export default defineConfig({
         'expo-linking',
         'expo-web-browser',
         'expo-router',
-        '@react-native-async-storage/async-storage',
-        'expo-secure-store',
         '@dfinity/agent',
-        '@dfinity/identity'
-      ]
-    }
+        '@dfinity/identity',
+      ],
+    },
   },
-  plugins: [
-    react(),
-    dts({ rollupTypes: true })
-  ]
+  plugins: [react(), dts({ rollupTypes: true })],
 });
