@@ -21,7 +21,6 @@ export type UseIIAuthParams = {
   localIPAddress: string;
   dfxNetwork: string;
   iiIntegrationCanisterId: string;
-  iiCanisterId: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
 };

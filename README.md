@@ -46,13 +46,19 @@ This package has the following peer dependencies that you need to install:
 
 ```tsx
 import { IIIntegrationProvider, useIIIntegration } from 'expo-ii-integration';
+import { AppKeyStorage } from 'expo-ii-integration/storage';
+import { DelegationStorage } from 'expo-ii-integration/storage';
 
 function App() {
+  const appKeyStorage = new AppKeyStorage(storage);
+  const delegationStorage = new DelegationStorage(storage);
+
   const iiIntegration = useIIIntegration({
     localIPAddress: '192.168.0.210',
     dfxNetwork: 'local',
     iiIntegrationCanisterId: 'YOUR_II_INTEGRATION_CANISTER_ID',
-    iiCanisterId: 'YOUR_II_CANISTER_ID',
+    appKeyStorage,
+    delegationStorage,
   });
 
   return (
@@ -182,7 +188,6 @@ type UseIIAuthParams = {
   localIPAddress: string; // Local IP address for development
   dfxNetwork: string; // dfx network (e.g., 'local', 'ic')
   iiIntegrationCanisterId: string; // II Integration canister ID
-  iiCanisterId: string; // Internet Identity canister ID
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
   delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain
 };
