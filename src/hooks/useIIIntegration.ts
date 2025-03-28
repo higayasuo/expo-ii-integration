@@ -21,6 +21,7 @@ export type UseIIAuthParams = {
   localIPAddress: string;
   dfxNetwork: string;
   iiIntegrationCanisterId: string;
+  frontendCanisterId: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
 };
@@ -29,6 +30,7 @@ export function useIIIntegration({
   localIPAddress,
   dfxNetwork,
   iiIntegrationCanisterId,
+  frontendCanisterId,
   appKeyStorage,
   delegationStorage,
 }: UseIIAuthParams) {
@@ -140,7 +142,7 @@ export function useIIIntegration({
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
 
-      const environment = getEnvironment(iiIntegrationCanisterId);
+      const environment = getEnvironment(frontendCanisterId);
       console.log('environment', environment);
 
       const canisterManager = new CanisterManager({

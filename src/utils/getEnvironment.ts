@@ -7,7 +7,11 @@ import Constants, { ExecutionEnvironment } from 'expo-constants';
  * @returns {string} - The current environment ('icp', 'bare', 'storeClient' or 'standalone').
  */
 export const getEnvironment = (frontendCanisterId: string): string => {
+  console.log('Constants.executionEnvironment', Constants.executionEnvironment);
+
   if (Constants.executionEnvironment === ExecutionEnvironment.Bare) {
+    console.log('window.location.href', window.location.href);
+    console.log('frontendCanisterId', frontendCanisterId);
     if (window.location.href.includes(frontendCanisterId)) {
       return 'icp';
     }

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed `redirectUri` and `iiUri` parameters
   - Added `environment` parameter for better environment handling
   - Kept `pubkey` parameter for authentication
+- Updated React peer dependency to `~18.3.1`
 
 ### Added
 
