@@ -6,7 +6,7 @@ import {
   Ed25519KeyIdentity,
 } from '@dfinity/identity';
 import * as WebBrowser from 'expo-web-browser';
-import { useURL, createURL } from 'expo-linking';
+import { useURL } from 'expo-linking';
 import { usePathname } from 'expo-router';
 import { Platform } from 'react-native';
 
@@ -15,6 +15,7 @@ import { CanisterManager } from 'canister-manager';
 import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
+import { getEnvironment } from '../utils/getEnvironment';
 
 export type UseIIAuthParams = {
   localIPAddress: string;
@@ -29,7 +30,6 @@ export function useIIIntegration({
   localIPAddress,
   dfxNetwork,
   iiIntegrationCanisterId,
-  iiCanisterId,
   appKeyStorage,
   delegationStorage,
 }: UseIIAuthParams) {
@@ -138,19 +138,16 @@ export function useIIIntegration({
       // Save the current path before login
       savePathWhenLogin();
 
-      const redirectUri = createURL('/');
-      console.log('redirectUri', redirectUri);
-
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
+
+      const environment = getEnvironment(iiIntegrationCanisterId);
+      console.log('environment', environment);
 
       const canisterManager = new CanisterManager({
         dfxNetwork,
         localIPAddress,
       });
-
-      const iiUri = canisterManager.getInternetIdentityURL(iiCanisterId);
-      console.log('iiUri', iiUri);
 
       const iiIntegrationURL = canisterManager.getFrontendCanisterURL(
         iiIntegrationCanisterId,
@@ -159,9 +156,8 @@ export function useIIIntegration({
 
       const url = new URL(iiIntegrationURL);
 
-      url.searchParams.set('redirect_uri', redirectUri);
       url.searchParams.set('pubkey', pubkey);
-      url.searchParams.set('ii_uri', iiUri);
+      url.searchParams.set('environment', environment);
 
       if (Platform.OS === 'web') {
         const messenger = new IIIntegrationMessenger();

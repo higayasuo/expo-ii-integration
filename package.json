@@ -53,6 +53,7 @@
     "@vitest/coverage-v8": "^1.4.0",
     "eslint": "^8.57.0",
     "globals": "^14.0.0",
+    "jsdom": "^26.0.0",
     "typescript": "^5.4.2",
     "vite": "^5.1.6",
     "vite-plugin-dts": "^3.7.3",
