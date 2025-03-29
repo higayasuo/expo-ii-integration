@@ -1,15 +1,10 @@
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+export const getEnvironment = (
+  executionEnvironment: string,
+  frontendCanisterId: string,
+): string => {
+  console.log('executionEnvironment', executionEnvironment);
 
-/**
- * Get the current environment based on the execution environment and frontend canister ID.
- *
- * @param {string} frontendCanisterId - The ID of the frontend canister.
- * @returns {string} - The current environment ('icp', 'bare', 'storeClient' or 'standalone').
- */
-export const getEnvironment = (frontendCanisterId: string): string => {
-  console.log('Constants.executionEnvironment', Constants.executionEnvironment);
-
-  if (Constants.executionEnvironment === ExecutionEnvironment.Bare) {
+  if (executionEnvironment === 'bare') {
     console.log('window.location.href', window.location.href);
     console.log('frontendCanisterId', frontendCanisterId);
     if (window.location.href.includes(frontendCanisterId)) {
@@ -18,5 +13,5 @@ export const getEnvironment = (frontendCanisterId: string): string => {
     return 'bare';
   }
 
-  return Constants.executionEnvironment;
+  return executionEnvironment;
 };

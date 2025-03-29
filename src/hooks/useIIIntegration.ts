@@ -16,12 +16,12 @@ import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { getEnvironment } from '../utils/getEnvironment';
-
 export type UseIIAuthParams = {
   localIPAddress: string;
   dfxNetwork: string;
   iiIntegrationCanisterId: string;
   frontendCanisterId: string;
+  executionEnvironment: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
 };
@@ -31,6 +31,7 @@ export function useIIIntegration({
   dfxNetwork,
   iiIntegrationCanisterId,
   frontendCanisterId,
+  executionEnvironment,
   appKeyStorage,
   delegationStorage,
 }: UseIIAuthParams) {
@@ -116,7 +117,6 @@ export function useIIIntegration({
       return;
     }
 
-    console.log('URL changed:', url);
     const search = new URLSearchParams(url?.split('?')[1]);
     const delegation = search.get('delegation');
     console.log('Delegation from URL:', delegation ? 'present' : 'not present');
@@ -142,9 +142,6 @@ export function useIIIntegration({
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
 
-      const environment = getEnvironment(frontendCanisterId);
-      console.log('environment', environment);
-
       const canisterManager = new CanisterManager({
         dfxNetwork,
         localIPAddress,
@@ -154,6 +151,12 @@ export function useIIIntegration({
         iiIntegrationCanisterId,
       );
       console.log('iiIntegrationURL', iiIntegrationURL);
+
+      const environment = getEnvironment(
+        executionEnvironment,
+        frontendCanisterId,
+      );
+      console.log('environment', environment);
 
       const url = new URL(iiIntegrationURL);
 

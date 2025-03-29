@@ -18,7 +18,6 @@ export default defineConfig({
         'react-native',
         'expo-linking',
         'expo-web-browser',
-        'expo-constants',
         'expo-router',
         '@dfinity/agent',
         '@dfinity/identity',

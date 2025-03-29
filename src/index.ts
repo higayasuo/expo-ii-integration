@@ -1,4 +1,3 @@
-// Export only the hook
 export * from './hooks/useIIIntegration';
 export * from './contexts/IIIntegrationContext';
 export * from './storage/AppKeyStorage';
