@@ -117,7 +117,7 @@ export function useIIIntegration({
       return;
     }
 
-    const search = new URLSearchParams(url?.split('?')[1]);
+    const search = new URLSearchParams(url?.split('#')[1]);
     const delegation = search.get('delegation');
     console.log('Delegation from URL:', delegation ? 'present' : 'not present');
 
