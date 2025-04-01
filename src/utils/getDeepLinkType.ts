@@ -7,7 +7,7 @@
  * @property {string} frontendCanisterId - The frontend canister ID.
  */
 type GetDeepLinkTypeArgs = {
-  easDeepLinkType?: string;
+  easDeepLinkType: string | undefined;
   deepLink: string;
   frontendCanisterId: string;
 };
@@ -33,7 +33,7 @@ export const getDeepLinkType = ({
 
   if (deepLink.startsWith('exp://')) {
     return 'expo-go';
-  } else if (deepLink === 'http://localhost:8081/') {
+  } else if (deepLink.startsWith('http://localhost:8081')) {
     return 'dev-server';
   } else if (deepLink.includes(frontendCanisterId)) {
     return 'icp';
@@ -41,6 +41,10 @@ export const getDeepLinkType = ({
 
   throw new Error(
     'Could not determine deep link type:' +
-      JSON.stringify({ easDeepLinkType, deepLink, frontendCanisterId }),
+      JSON.stringify(
+        { easDeepLinkType, deepLink, frontendCanisterId },
+        undefined,
+        2,
+      ),
   );
 };
