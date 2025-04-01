@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2025-04-01
+
+### Changed
+
+- Renamed `easFrontendPlatform` to `easDeepLinkType` for better clarity
+- Updated deep link type values to use `legacy` and `modern` instead of `legacy-deep-link` and `modern-deep-link`
+- Updated documentation to reflect the new parameter name and values
+
 ## [0.1.5] - 2025-03-30
 
 ### Changed

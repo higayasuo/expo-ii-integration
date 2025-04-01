@@ -56,6 +56,9 @@ function App() {
   const iiIntegration = useIIIntegration({
     localIPAddress: '192.168.0.210',
     dfxNetwork: 'local',
+    easDeepLinkType: 'legacy',
+    deepLink: 'your-deep-link',
+    frontendCanisterId: 'your-frontend-canister-id',
     iiIntegrationCanisterId: 'YOUR_II_INTEGRATION_CANISTER_ID',
     appKeyStorage,
     delegationStorage,
@@ -187,6 +190,9 @@ The main hook for Internet Identity integration.
 type UseIIAuthParams = {
   localIPAddress: string; // Local IP address for development
   dfxNetwork: string; // dfx network (e.g., 'local', 'ic')
+  easDeepLinkType?: string; // EAS deep link type ('legacy' or 'modern')
+  deepLink: string; // Deep link to determine the type
+  frontendCanisterId: string; // Frontend canister ID
   iiIntegrationCanisterId: string; // II Integration canister ID
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
   delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain

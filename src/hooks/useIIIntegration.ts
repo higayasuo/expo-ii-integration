@@ -15,13 +15,15 @@ import { CanisterManager } from 'canister-manager';
 import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-import { getEnvironment } from '../utils/getEnvironment';
+import { getDeepLinkType } from '../utils/getDeepLinkType';
+
 export type UseIIAuthParams = {
   localIPAddress: string;
   dfxNetwork: string;
-  iiIntegrationCanisterId: string;
+  easDeepLinkType: string | undefined;
+  deepLink: string;
   frontendCanisterId: string;
-  executionEnvironment: string;
+  iiIntegrationCanisterId: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
 };
@@ -29,9 +31,10 @@ export type UseIIAuthParams = {
 export function useIIIntegration({
   localIPAddress,
   dfxNetwork,
-  iiIntegrationCanisterId,
+  easDeepLinkType,
+  deepLink,
   frontendCanisterId,
-  executionEnvironment,
+  iiIntegrationCanisterId,
   appKeyStorage,
   delegationStorage,
 }: UseIIAuthParams) {
@@ -152,16 +155,17 @@ export function useIIIntegration({
       );
       console.log('iiIntegrationURL', iiIntegrationURL);
 
-      const environment = getEnvironment(
-        executionEnvironment,
+      const deepLinkType = getDeepLinkType({
+        easDeepLinkType,
+        deepLink,
         frontendCanisterId,
-      );
-      console.log('environment', environment);
+      });
+      console.log('deepLinkType', deepLinkType);
 
       const url = new URL(iiIntegrationURL);
 
       url.searchParams.set('pubkey', pubkey);
-      url.searchParams.set('environment', environment);
+      url.searchParams.set('deep-link-type', deepLinkType);
 
       if (Platform.OS === 'web') {
         const messenger = new IIIntegrationMessenger();
