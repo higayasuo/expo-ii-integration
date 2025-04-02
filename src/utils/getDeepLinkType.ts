@@ -41,10 +41,8 @@ export const getDeepLinkType = ({
 
   throw new Error(
     'Could not determine deep link type:' +
-      JSON.stringify(
-        { easDeepLinkType, deepLink, frontendCanisterId },
-        undefined,
-        2,
-      ),
+      `\n  {\n    "easDeepLinkType": ${
+        easDeepLinkType === undefined ? 'undefined' : `"${easDeepLinkType}"`
+      },\n    "deepLink": "${deepLink}",\n    "frontendCanisterId": "${frontendCanisterId}"\n  }`,
   );
 };

@@ -70,11 +70,7 @@ describe('getDeepLinkType', () => {
       expect(error instanceof Error).toBe(true);
       expect((error as Error).message).toBe(
         'Could not determine deep link type:' +
-          JSON.stringify(
-            { easDeepLinkType, deepLink, frontendCanisterId },
-            undefined,
-            2,
-          ),
+          `\n  {\n    "easDeepLinkType": undefined,\n    "deepLink": "${deepLink}",\n    "frontendCanisterId": "${frontendCanisterId}"\n  }`,
       );
     }
   });

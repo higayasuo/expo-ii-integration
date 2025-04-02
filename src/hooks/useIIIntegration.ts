@@ -8,7 +8,6 @@ import {
 import * as WebBrowser from 'expo-web-browser';
 import { useURL } from 'expo-linking';
 import { usePathname } from 'expo-router';
-import { Platform } from 'react-native';
 
 import { CanisterManager } from 'canister-manager';
 
@@ -17,7 +16,7 @@ import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIden
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { getDeepLinkType } from '../utils/getDeepLinkType';
 
-export type UseIIAuthParams = {
+type UseIIIntegrationParams = {
   localIPAddress: string;
   dfxNetwork: string;
   easDeepLinkType: string | undefined;
@@ -26,6 +25,7 @@ export type UseIIAuthParams = {
   iiIntegrationCanisterId: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
+  platform: string;
 };
 
 export function useIIIntegration({
@@ -37,7 +37,8 @@ export function useIIIntegration({
   iiIntegrationCanisterId,
   appKeyStorage,
   delegationStorage,
-}: UseIIAuthParams) {
+  platform,
+}: UseIIIntegrationParams) {
   const [isReady, setIsReady] = useState(false);
   const url = useURL();
   const [identity, setIdentity] = useState<DelegationIdentity | undefined>(
@@ -167,7 +168,7 @@ export function useIIIntegration({
       url.searchParams.set('pubkey', pubkey);
       url.searchParams.set('deep-link-type', deepLinkType);
 
-      if (Platform.OS === 'web') {
+      if (platform === 'web') {
         const messenger = new IIIntegrationMessenger();
         iiIntegrationMessengerRef.current = messenger;
         messenger.on('success', async (response) => {

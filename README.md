@@ -60,6 +60,7 @@ function App() {
     deepLink: 'your-deep-link',
     frontendCanisterId: 'your-frontend-canister-id',
     iiIntegrationCanisterId: 'YOUR_II_INTEGRATION_CANISTER_ID',
+    platform: 'web',
     appKeyStorage,
     delegationStorage,
   });
@@ -194,6 +195,7 @@ type UseIIAuthParams = {
   deepLink: string; // Deep link to determine the type
   frontendCanisterId: string; // Frontend canister ID
   iiIntegrationCanisterId: string; // II Integration canister ID
+  platform: string; // Platform identifier (e.g., 'ios', 'android', 'web')
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
   delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain
 };

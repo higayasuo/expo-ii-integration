@@ -15,7 +15,6 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'react',
-        'react-native',
         'expo-linking',
         'expo-web-browser',
         'expo-router',
