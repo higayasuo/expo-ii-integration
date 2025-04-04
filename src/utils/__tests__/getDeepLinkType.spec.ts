@@ -44,6 +44,16 @@ describe('getDeepLinkType', () => {
     expect(result).toBe('icp');
   });
 
+  it('should prioritize specific conditions over easDeepLinkType', () => {
+    const result = getDeepLinkType({
+      easDeepLinkType: 'legacy',
+      deepLink: 'exp://localhost:8081',
+      frontendCanisterId: mockFrontendCanisterId,
+    });
+
+    expect(result).toBe('expo-go');
+  });
+
   it('should throw an error when deep link type cannot be determined', () => {
     expect(() =>
       getDeepLinkType({

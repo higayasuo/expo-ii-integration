@@ -1,6 +1,6 @@
 {
   "name": "expo-ii-integration",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Expo library to enable smartphone native applications to invoke Internet Identity through a web application",
   "type": "module",
   "files": [

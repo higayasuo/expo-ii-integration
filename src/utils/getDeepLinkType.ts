@@ -27,16 +27,16 @@ export const getDeepLinkType = ({
   deepLink,
   frontendCanisterId,
 }: GetDeepLinkTypeArgs): string => {
-  if (easDeepLinkType) {
-    return easDeepLinkType;
-  }
-
   if (deepLink.startsWith('exp://')) {
     return 'expo-go';
   } else if (deepLink.startsWith('http://localhost:8081')) {
     return 'dev-server';
   } else if (deepLink.includes(frontendCanisterId)) {
     return 'icp';
+  }
+
+  if (easDeepLinkType) {
+    return easDeepLinkType;
   }
 
   throw new Error(
