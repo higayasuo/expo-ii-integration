@@ -112,13 +112,17 @@ export function useIIIntegration({
     await delegationStorage.save(delegationChain);
     const appKey = await appKeyStorage.retrieve();
 
+    // Get the last delegation's public key from the chain and compare
+    const delegations = delegationChain.delegations;
+    const lastDelegation = delegations[delegations.length - 1];
+
     if (
       !arrayBufferEquals(
-        delegationChain.publicKey,
+        lastDelegation.delegation.pubkey,
         appKey.getPublicKey().toDer(),
       )
     ) {
-      throw new Error('Delegation public key does not match app key');
+      throw new Error('Last delegation public key does not match app key');
     }
 
     const id = DelegationIdentity.fromDelegation(appKey, delegationChain);

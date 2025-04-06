@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2025-04-07
+
+### Fixed
+
+- Fixed public key comparison in delegation chain validation:
+  - Changed to compare with the last delegation's public key instead of the delegation chain's public key
+  - Removed unnecessary Uint8Array conversions for ArrayBuffer comparison
+  - Improved error handling for public key mismatch cases
+
+## [0.1.8] - 2025-04-07
+
+### Fixed
+
+- Fixed Buffer usage in browser environment:
+  - Removed all Buffer.from() calls that were causing errors in browser environments
+  - Implemented browser-compatible methods for hex string conversion
+  - Improved error handling for public key comparison
+
 ## [0.1.7] - 2025-04-06
 
 ### Changed
