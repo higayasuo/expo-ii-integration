@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2025-04-06
+
+### Changed
+
+- Improved security documentation in README.md:
+  - Reorganized security sections to emphasize public key verification as the primary security measure
+  - Added detailed explanation of deep link security with platform-specific implementations
+  - Clarified the distinction between different security measures
+  - Added links to source code files for better traceability
+  - Improved explanation of origin validation for web messaging
+  - Added documentation for `arrayBufferEquals.ts` utility, which performs the critical security check of comparing delegation chain public keys with app public keys
+
 ## [0.1.6] - 2025-04-02
 
 ### Changed
@@ -97,3 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Delegation chain validation
   - Secure key storage
   - Origin validation for web messaging
+
+### Added
+
+- Added JSDoc documentation to `arrayBufferEquals.ts` utility function, which is a critical security component for verifying delegation chain public keys

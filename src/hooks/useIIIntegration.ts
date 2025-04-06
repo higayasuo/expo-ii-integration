@@ -15,6 +15,7 @@ import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { getDeepLinkType } from '../utils/getDeepLinkType';
+import { arrayBufferEquals } from '../utils/arrayBufferEquals';
 
 type UseIIIntegrationParams = {
   localIPAddress: string;
@@ -110,6 +111,16 @@ export function useIIIntegration({
     const delegationChain = DelegationChain.fromJSON(delegation);
     await delegationStorage.save(delegationChain);
     const appKey = await appKeyStorage.retrieve();
+
+    if (
+      !arrayBufferEquals(
+        delegationChain.publicKey,
+        appKey.getPublicKey().toDer(),
+      )
+    ) {
+      throw new Error('Delegation public key does not match app key');
+    }
+
     const id = DelegationIdentity.fromDelegation(appKey, delegationChain);
     setIdentity(id);
     console.log('identity set from delegation');
