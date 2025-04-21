@@ -10,7 +10,7 @@ export default defineConfig({
         index: resolve(__dirname, 'src/index.ts'),
       },
       formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`,
+      fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rollupOptions: {
       external: [
@@ -20,6 +20,8 @@ export default defineConfig({
         'expo-router',
         '@dfinity/agent',
         '@dfinity/identity',
+        'expo-icp-frontend-helpers',
+        'expo-storage-universal',
       ],
     },
   },

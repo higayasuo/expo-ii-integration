@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toHex } from '@dfinity/agent';
-import {
-  DelegationChain,
-  DelegationIdentity,
-  Ed25519KeyIdentity,
-} from '@dfinity/identity';
+import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
 import * as WebBrowser from 'expo-web-browser';
 import { useURL } from 'expo-linking';
 import { usePathname } from 'expo-router';
@@ -14,8 +10,8 @@ import { CanisterManager } from 'canister-manager';
 import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-import { getDeepLinkType } from '../utils/getDeepLinkType';
-import { arrayBufferEquals } from '../utils/arrayBufferEquals';
+import { getDeepLinkType } from 'expo-icp-frontend-helpers';
+import { buildIdentityFromDelegation } from './buildIdentityFromDelegation';
 
 type UseIIIntegrationParams = {
   localIPAddress: string;
@@ -107,27 +103,19 @@ export function useIIIntegration({
   }, []);
 
   const setupIdentityFromDelegation = async (delegation: string) => {
-    console.log('Processing delegation');
-    const delegationChain = DelegationChain.fromJSON(delegation);
-    await delegationStorage.save(delegationChain);
-    const appKey = await appKeyStorage.retrieve();
+    try {
+      console.log('Processing delegation');
 
-    // Get the last delegation's public key from the chain and compare
-    const delegations = delegationChain.delegations;
-    const lastDelegation = delegations[delegations.length - 1];
-
-    if (
-      !arrayBufferEquals(
-        lastDelegation.delegation.pubkey,
-        appKey.getPublicKey().toDer(),
-      )
-    ) {
-      throw new Error('Last delegation public key does not match app key');
+      const id = await buildIdentityFromDelegation({
+        delegation,
+        delegationStorage,
+        appKeyStorage,
+      });
+      setIdentity(id);
+      console.log('identity set from delegation');
+    } catch (error) {
+      setAuthError(error);
     }
-
-    const id = DelegationIdentity.fromDelegation(appKey, delegationChain);
-    setIdentity(id);
-    console.log('identity set from delegation');
   };
 
   // Handle URL changes for login callback
