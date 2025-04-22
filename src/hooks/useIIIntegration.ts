@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toHex } from '@dfinity/agent';
-import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
+import { DelegationIdentity } from '@dfinity/identity';
 import * as WebBrowser from 'expo-web-browser';
 import { useURL } from 'expo-linking';
-import { usePathname } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 
 import { CanisterManager } from 'canister-manager';
 
@@ -12,6 +12,7 @@ import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIden
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { getDeepLinkType } from 'expo-icp-frontend-helpers';
 import { buildIdentityFromDelegation } from './buildIdentityFromDelegation';
+import { buildIdentityFromStorage } from './buildIdentityFromStorage';
 
 type UseIIIntegrationParams = {
   localIPAddress: string;
@@ -38,6 +39,7 @@ export function useIIIntegration({
 }: UseIIIntegrationParams) {
   const [isReady, setIsReady] = useState(false);
   const url = useURL();
+  const router = useRouter();
   const [identity, setIdentity] = useState<DelegationIdentity | undefined>(
     undefined,
   );
@@ -80,19 +82,13 @@ export function useIIIntegration({
 
     (async () => {
       try {
-        const appKey = await appKeyStorage.find();
-        const delegation = await delegationStorage.find();
+        const id = await buildIdentityFromStorage({
+          appKeyStorage,
+          delegationStorage,
+        });
 
-        if (appKey && delegation) {
-          const identity = DelegationIdentity.fromDelegation(
-            appKey,
-            delegation,
-          );
-          setIdentity(identity);
-        } else if (!appKey) {
-          const appKey = Ed25519KeyIdentity.generate();
-          await appKeyStorage.save(appKey);
-          await delegationStorage.remove();
+        if (id) {
+          setIdentity(id);
         }
       } catch (error) {
         setAuthError(error);
@@ -133,6 +129,10 @@ export function useIIIntegration({
         try {
           await setupIdentityFromDelegation(delegation);
           WebBrowser.dismissBrowser();
+          const path = pathWhenLoginRef.current;
+          if (path) {
+            router.replace(path);
+          }
         } catch (error) {
           setAuthError(error);
         }

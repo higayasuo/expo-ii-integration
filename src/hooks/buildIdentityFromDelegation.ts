@@ -2,7 +2,7 @@ import { DelegationChain, DelegationIdentity } from '@dfinity/identity';
 
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { arrayBufferEquals } from '../utils/arrayBufferEquals';
+import { buildIdentity } from 'expo-icp-frontend-helpers';
 
 /**
  * Represents the arguments required to build an identity from a delegation.
@@ -36,18 +36,8 @@ export const buildIdentityFromDelegation = async ({
   await delegationStorage.save(delegationChain);
   const appKey = await appKeyStorage.retrieve();
 
-  // Get the last delegation's public key from the chain and compare
-  const delegations = delegationChain.delegations;
-  const lastDelegation = delegations[delegations.length - 1];
-
-  if (
-    !arrayBufferEquals(
-      lastDelegation.delegation.pubkey,
-      appKey.getPublicKey().toDer(),
-    )
-  ) {
-    throw new Error('Last delegation public key does not match app key');
-  }
-
-  return DelegationIdentity.fromDelegation(appKey, delegationChain);
+  return buildIdentity({
+    appKey,
+    delegationChain,
+  });
 };
