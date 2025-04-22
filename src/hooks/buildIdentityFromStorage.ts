@@ -2,7 +2,10 @@ import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
 
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { buildIdentity } from 'expo-icp-frontend-helpers';
+import {
+  buildIdentity,
+  isAuthenticationExpiredError,
+} from 'expo-icp-frontend-helpers';
 
 /**
  * Represents the arguments required to build an identity from storage.
@@ -32,10 +35,22 @@ export const buildIdentityFromStorage = async ({
   const delegationChain = await delegationStorage.find();
 
   if (appKey && delegationChain) {
-    return buildIdentity({
-      appKey,
-      delegationChain,
-    });
+    try {
+      const identity = await buildIdentity({
+        appKey,
+        delegationChain,
+      });
+
+      return identity;
+    } catch (error) {
+      if (isAuthenticationExpiredError(error)) {
+        await delegationStorage.remove();
+        console.log('Authentication expired, removing delegation chain');
+        return undefined;
+      }
+
+      throw error;
+    }
   } else if (!appKey) {
     const appKey = Ed25519KeyIdentity.generate();
     await appKeyStorage.save(appKey);

@@ -55,12 +55,12 @@ export function useIIIntegration({
   // Initialize auth state
   useEffect(() => {
     if (isReady) {
-      console.log('skipping first useEffect');
+      console.log('skipping initialization because isReady is true');
       return;
     }
 
     if (identity) {
-      console.log('skipping first useEffect because identity is already set');
+      console.log('skipping initialization because identity is already set');
       return;
     }
 

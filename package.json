@@ -65,7 +65,7 @@
   "peerDependencies": {
     "@dfinity/agent": "^0.20.2",
     "@dfinity/identity": "^0.20.2",
-    "expo-icp-frontend-helpers": "^0.1.2",
+    "expo-icp-frontend-helpers": "^0.1.4",
     "expo-linking": "~7.0",
     "expo-router": "~4.0",
     "expo-storage-universal": "^0.3.2",
