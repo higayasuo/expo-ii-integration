@@ -1,5 +1,5 @@
 import { Storage, StorageWrapper } from 'expo-storage-universal';
-import { DelegationChain, isDelegationValid } from '@dfinity/identity';
+import { DelegationChain } from '@dfinity/identity';
 
 /**
  * A storage wrapper implementation for DelegationChain that handles serialization, deserialization, and validation.
@@ -34,15 +34,7 @@ export class DelegationChainValueStorageWrapper
       return undefined;
     }
 
-    const delegation = DelegationChain.fromJSON(storedValue);
-
-    if (!isDelegationValid(delegation)) {
-      console.log('Invalid delegation chain, removing delegation');
-      await this.remove();
-      return undefined;
-    }
-
-    return delegation;
+    return DelegationChain.fromJSON(storedValue);
   }
 
   /**
