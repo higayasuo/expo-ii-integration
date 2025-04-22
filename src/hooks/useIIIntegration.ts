@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toHex } from '@dfinity/agent';
 import { DelegationIdentity } from '@dfinity/identity';
 import * as WebBrowser from 'expo-web-browser';
