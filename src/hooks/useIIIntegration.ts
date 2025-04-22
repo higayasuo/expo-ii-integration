@@ -52,22 +52,6 @@ export function useIIIntegration({
   const currentPath = usePathname();
   const pathWhenLoginRef = useRef<string | undefined>(undefined);
 
-  const savePathWhenLogin = useCallback(() => {
-    console.log('Saving path when login:', currentPath);
-
-    if (!currentPath) {
-      return;
-    }
-
-    pathWhenLoginRef.current = currentPath;
-  }, [currentPath]);
-
-  const clearPathWhenLogin = useCallback(() => {
-    console.log('Clearing path when login:', pathWhenLoginRef.current);
-
-    pathWhenLoginRef.current = undefined;
-  }, []);
-
   // Initialize auth state
   useEffect(() => {
     if (isReady) {
@@ -144,7 +128,7 @@ export function useIIIntegration({
     try {
       console.log('Logging in');
       // Save the current path before login
-      savePathWhenLogin();
+      pathWhenLoginRef.current = currentPath;
 
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
@@ -209,8 +193,6 @@ export function useIIIntegration({
     isAuthenticated: !!identity,
     login,
     logout,
-    pathWhenLogin: pathWhenLoginRef.current,
-    clearPathWhenLogin,
     authError,
   };
 }
