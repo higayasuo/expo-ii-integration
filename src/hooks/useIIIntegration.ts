@@ -5,13 +5,13 @@ import * as WebBrowser from 'expo-web-browser';
 import { useURL } from 'expo-linking';
 import { usePathname, useRouter } from 'expo-router';
 
-import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 
-import { buildIdentityFromDelegation } from './buildIdentityFromDelegation';
-import { buildIdentityFromStorage } from './buildIdentityFromStorage';
 import { buildIIIntegrationURL } from './buildIIIntegrationURL';
+import { initialize } from './initialize';
+import { handleURL } from './handleURL';
+import { getLoginInternal } from './loginInternal';
 
 type UseIIIntegrationParams = {
   localIPAddress: string;
@@ -36,89 +36,29 @@ export function useIIIntegration({
   delegationStorage,
   platform,
 }: UseIIIntegrationParams) {
-  const [isReady, setIsReady] = useState(false);
   const url = useURL();
   const router = useRouter();
   const [identity, setIdentity] = useState<DelegationIdentity | undefined>(
     undefined,
   );
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
+  const [isReady, setIsReady] = useState(false);
 
   // Login path management
   const currentPath = usePathname();
   const pathWhenLoginRef = useRef<string | undefined>(undefined);
 
-  const initializeIdentity = async () => {
-    try {
-      const id = await buildIdentityFromStorage({
-        appKeyStorage,
-        delegationStorage,
-      });
-
-      if (id) {
-        setIdentity(id);
-      }
-    } catch (error) {
-      setAuthError(error);
-    } finally {
-      setIsReady(true);
-    }
-  };
-
-  // Initialize identity from storage
   useEffect(() => {
-    if (isReady) {
-      console.log('skipping initialization because isReady is true');
-      return;
-    }
-
-    if (identity) {
-      console.log('skipping initialization because identity is already set');
-      return;
-    }
-
-    initializeIdentity();
+    initialize({
+      appKeyStorage,
+      delegationStorage,
+      onSuccess: setIdentity,
+      onError: setAuthError,
+      onFinally: () => {
+        setIsReady(true);
+      },
+    });
   }, []);
-
-  const setupIdentityFromDelegation = async (delegation: string) => {
-    try {
-      console.log('Processing delegation');
-
-      const id = await buildIdentityFromDelegation({
-        delegation,
-        delegationStorage,
-        appKeyStorage,
-      });
-      setIdentity(id);
-      console.log('identity set from delegation');
-    } catch (error) {
-      setAuthError(error);
-    }
-  };
-
-  const handleDelegation = async (delegation: string) => {
-    try {
-      await setupIdentityFromDelegation(delegation);
-      WebBrowser.dismissBrowser();
-      const path = pathWhenLoginRef.current;
-
-      if (path) {
-        router.replace(path);
-      }
-    } catch (error) {
-      setAuthError(error);
-    }
-  };
-
-  const handleURL = (url: string) => {
-    const search = new URLSearchParams(url?.split('#')[1]);
-    const delegation = search.get('delegation');
-    console.log('Delegation from URL:', delegation ? 'present' : 'not present');
-
-    if (delegation) {
-      handleDelegation(delegation);
-    }
-  };
 
   // Handle URL changes for login callback
   useEffect(() => {
@@ -126,34 +66,35 @@ export function useIIIntegration({
       return;
     }
 
-    try {
-      handleURL(url);
-    } catch (error) {
-      setAuthError(error);
-    }
+    handleURL({
+      url,
+      delegationStorage,
+      appKeyStorage,
+      onSuccess: (id: DelegationIdentity) => {
+        setIdentity(id);
+        WebBrowser.dismissBrowser();
+        const path = pathWhenLoginRef.current;
+        if (path) {
+          router.replace(path);
+        }
+      },
+      onError: setAuthError,
+    });
   }, [url]);
 
-  const webLogin = async (iiIntegrationURL: string) => {
-    const messenger = new IIIntegrationMessenger();
-    messenger.on('success', async (response) => {
-      console.log('IIIntegration success');
-      await setupIdentityFromDelegation(response.delegation);
-      messenger.close();
-    });
-
-    await messenger.open({
-      url: iiIntegrationURL,
-    });
-  };
-
-  const nativeLogin = async (iiIntegrationURL: string) => {
-    pathWhenLoginRef.current = currentPath;
-    await WebBrowser.openBrowserAsync(iiIntegrationURL);
-  };
+  const loginInternal = getLoginInternal({
+    platform,
+    appKeyStorage,
+    delegationStorage,
+    onSuccess: setIdentity,
+    onError: setAuthError,
+  });
 
   const login = async () => {
     try {
       console.log('Logging in');
+
+      pathWhenLoginRef.current = currentPath;
 
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
@@ -168,12 +109,9 @@ export function useIIIntegration({
         iiIntegrationCanisterId,
       });
 
-      if (platform === 'web') {
-        await webLogin(iiIntegrationURL);
-      } else {
-        await nativeLogin(iiIntegrationURL);
-      }
+      await loginInternal(iiIntegrationURL);
     } catch (error) {
+      console.error('Login failed:', error);
       setAuthError(error);
     }
   };

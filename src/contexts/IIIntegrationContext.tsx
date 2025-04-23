@@ -8,8 +8,6 @@ export interface IIIntegrationContextType {
   isAuthenticated: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
-  pathWhenLogin: string | undefined;
-  clearPathWhenLogin: () => void;
   authError: unknown | undefined;
 }
 
@@ -19,7 +17,7 @@ const IIIntegrationContext = createContext<
 >(undefined);
 
 // Hook to use the context
-export function useIIIntegrationContext(): IIIntegrationContextType {
+export const useIIIntegrationContext = (): IIIntegrationContextType => {
   const context = useContext(IIIntegrationContext);
   if (context === undefined) {
     throw new Error(
@@ -27,7 +25,7 @@ export function useIIIntegrationContext(): IIIntegrationContextType {
     );
   }
   return context;
-}
+};
 
 // Provider component
 interface IIIntegrationProviderProps {
@@ -35,13 +33,13 @@ interface IIIntegrationProviderProps {
   value: IIIntegrationContextType;
 }
 
-export function IIIntegrationProvider({
+export const IIIntegrationProvider = ({
   children,
   value,
-}: IIIntegrationProviderProps) {
+}: IIIntegrationProviderProps) => {
   return (
     <IIIntegrationContext.Provider value={value}>
       {children}
     </IIIntegrationContext.Provider>
   );
-}
+};
