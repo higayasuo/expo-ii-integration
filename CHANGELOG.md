@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2025-04-23
+
+### Changed
+
+- Simplified documentation in README.md:
+  - Removed overly detailed security implementation details
+  - Focused on essential security features and usage patterns
+  - Improved clarity of installation and setup instructions
+- Updated storage class documentation:
+  - Simplified JSDoc comments in AppKeyStorage and DelegationStorage
+  - Made documentation more concise and focused
+  - Improved type safety and clarity
+
 ## [0.1.9] - 2025-04-07
 
 ### Fixed

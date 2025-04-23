@@ -5,14 +5,13 @@ import * as WebBrowser from 'expo-web-browser';
 import { useURL } from 'expo-linking';
 import { usePathname, useRouter } from 'expo-router';
 
-import { CanisterManager } from 'canister-manager';
-
 import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-import { getDeepLinkType } from 'expo-icp-frontend-helpers';
+
 import { buildIdentityFromDelegation } from './buildIdentityFromDelegation';
 import { buildIdentityFromStorage } from './buildIdentityFromStorage';
+import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 
 type UseIIIntegrationParams = {
   localIPAddress: string;
@@ -44,15 +43,29 @@ export function useIIIntegration({
     undefined,
   );
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
-  const iiIntegrationMessengerRef = useRef<IIIntegrationMessenger | undefined>(
-    undefined,
-  );
 
   // Login path management
   const currentPath = usePathname();
   const pathWhenLoginRef = useRef<string | undefined>(undefined);
 
-  // Initialize auth state
+  const initializeIdentity = async () => {
+    try {
+      const id = await buildIdentityFromStorage({
+        appKeyStorage,
+        delegationStorage,
+      });
+
+      if (id) {
+        setIdentity(id);
+      }
+    } catch (error) {
+      setAuthError(error);
+    } finally {
+      setIsReady(true);
+    }
+  };
+
+  // Initialize identity from storage
   useEffect(() => {
     if (isReady) {
       console.log('skipping initialization because isReady is true');
@@ -64,22 +77,7 @@ export function useIIIntegration({
       return;
     }
 
-    (async () => {
-      try {
-        const id = await buildIdentityFromStorage({
-          appKeyStorage,
-          delegationStorage,
-        });
-
-        if (id) {
-          setIdentity(id);
-        }
-      } catch (error) {
-        setAuthError(error);
-      } finally {
-        setIsReady(true);
-      }
-    })();
+    initializeIdentity();
   }, []);
 
   const setupIdentityFromDelegation = async (delegation: string) => {
@@ -98,78 +96,82 @@ export function useIIIntegration({
     }
   };
 
+  const handleDelegation = async (delegation: string) => {
+    try {
+      await setupIdentityFromDelegation(delegation);
+      WebBrowser.dismissBrowser();
+      const path = pathWhenLoginRef.current;
+
+      if (path) {
+        router.replace(path);
+      }
+    } catch (error) {
+      setAuthError(error);
+    }
+  };
+
+  const handleURL = (url: string) => {
+    const search = new URLSearchParams(url?.split('#')[1]);
+    const delegation = search.get('delegation');
+    console.log('Delegation from URL:', delegation ? 'present' : 'not present');
+
+    if (delegation) {
+      handleDelegation(delegation);
+    }
+  };
+
   // Handle URL changes for login callback
   useEffect(() => {
     if (identity || !url) {
       return;
     }
 
-    const search = new URLSearchParams(url?.split('#')[1]);
-    const delegation = search.get('delegation');
-    console.log('Delegation from URL:', delegation ? 'present' : 'not present');
-
-    if (delegation) {
-      (async () => {
-        try {
-          await setupIdentityFromDelegation(delegation);
-          WebBrowser.dismissBrowser();
-          const path = pathWhenLoginRef.current;
-          if (path) {
-            router.replace(path);
-          }
-        } catch (error) {
-          setAuthError(error);
-        }
-      })();
+    try {
+      handleURL(url);
+    } catch (error) {
+      setAuthError(error);
     }
   }, [url]);
+
+  const webLogin = async (iiIntegrationURL: string) => {
+    const messenger = new IIIntegrationMessenger();
+    messenger.on('success', async (response) => {
+      console.log('IIIntegration success');
+      await setupIdentityFromDelegation(response.delegation);
+      messenger.close();
+    });
+
+    await messenger.open({
+      url: iiIntegrationURL,
+    });
+  };
+
+  const nativeLogin = async (iiIntegrationURL: string) => {
+    pathWhenLoginRef.current = currentPath;
+    await WebBrowser.openBrowserAsync(iiIntegrationURL);
+  };
 
   const login = async () => {
     try {
       console.log('Logging in');
-      // Save the current path before login
-      pathWhenLoginRef.current = currentPath;
 
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
 
-      const canisterManager = new CanisterManager({
-        dfxNetwork,
+      const iiIntegrationURL = buildIIIntegrationURL({
+        pubkey,
         localIPAddress,
-      });
-
-      const iiIntegrationURL = canisterManager.getFrontendCanisterURL(
-        iiIntegrationCanisterId,
-      );
-      console.log('iiIntegrationURL', iiIntegrationURL);
-
-      const deepLinkType = getDeepLinkType({
+        dfxNetwork,
         easDeepLinkType,
         deepLink,
         frontendCanisterId,
+        iiIntegrationCanisterId,
       });
-      console.log('deepLinkType', deepLinkType);
-
-      const url = new URL(iiIntegrationURL);
-
-      url.searchParams.set('pubkey', pubkey);
-      url.searchParams.set('deep-link-type', deepLinkType);
 
       if (platform === 'web') {
-        const messenger = new IIIntegrationMessenger();
-        iiIntegrationMessengerRef.current = messenger;
-        messenger.on('success', async (response) => {
-          console.log('IIIntegration success');
-          await setupIdentityFromDelegation(response.delegation);
-          messenger.close();
-          iiIntegrationMessengerRef.current = undefined;
-        });
-
-        await messenger.open({
-          url: url.toString(),
-        });
+        await webLogin(iiIntegrationURL);
       } else {
-        await WebBrowser.openBrowserAsync(url.toString());
+        await nativeLogin(iiIntegrationURL);
       }
     } catch (error) {
       setAuthError(error);

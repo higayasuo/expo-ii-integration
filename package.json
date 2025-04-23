@@ -58,13 +58,11 @@
     "vite-plugin-dts": "^3.7.3",
     "vitest": "^1.4.0"
   },
-  "dependencies": {
-    "@higayasuo/iframe-messenger": "^0.1.0",
-    "canister-manager": "^0.1.7"
-  },
   "peerDependencies": {
     "@dfinity/agent": "^0.20.2",
     "@dfinity/identity": "^0.20.2",
+    "@higayasuo/iframe-messenger": "^0.1.0",
+    "canister-manager": "^0.1.7",
     "expo-icp-frontend-helpers": "^0.1.4",
     "expo-linking": "~7.0",
     "expo-router": "~4.0",

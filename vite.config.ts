@@ -22,6 +22,7 @@ export default defineConfig({
         '@dfinity/identity',
         'expo-icp-frontend-helpers',
         'expo-storage-universal',
+        'canister-manager',
       ],
     },
   },
