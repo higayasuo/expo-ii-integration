@@ -113,7 +113,6 @@ export function useIIIntegration({
     delegationStorage,
     onSuccess: setIdentity,
     onError: setAuthError,
-    router,
   });
 
   const login = async (args: LoginArgs = {}) => {
