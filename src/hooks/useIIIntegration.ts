@@ -13,6 +13,18 @@ import { initialize } from './initialize';
 import { handleURL } from './handleURL';
 import { getLoginInternal } from './loginInternal';
 
+/**
+ * Represents the parameters required for the useIIIntegration hook.
+ * @property localIPAddress - The local IP address for the integration
+ * @property dfxNetwork - The DFX network to use for the integration
+ * @property easDeepLinkType - The type of deep link to use for the integration, if any
+ * @property deepLink - The deep link URL for the integration
+ * @property frontendCanisterId - The canister ID for the frontend
+ * @property iiIntegrationCanisterId - The canister ID for the II integration
+ * @property appKeyStorage - The storage wrapper for the app key
+ * @property delegationStorage - The storage wrapper for the delegation chain
+ * @property platform - The platform on which the integration is happening
+ */
 type UseIIIntegrationParams = {
   localIPAddress: string;
   dfxNetwork: string;
@@ -25,6 +37,19 @@ type UseIIIntegrationParams = {
   platform: string;
 };
 
+/**
+ * Represents the arguments for the login function.
+ * @property redirectPath - The path to redirect to after login, if any
+ */
+type LoginArgs = {
+  redirectPath?: string;
+};
+
+/**
+ * Hook for managing II integration.
+ * @param params - The parameters required for the II integration
+ * @returns An object containing the current identity, readiness state, authentication state, login function, logout function, and authentication error
+ */
 export function useIIIntegration({
   localIPAddress,
   dfxNetwork,
@@ -46,7 +71,7 @@ export function useIIIntegration({
 
   // Login path management
   const currentPath = usePathname();
-  const pathWhenLoginRef = useRef<string | undefined>(undefined);
+  const redirectPathRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     initialize({
@@ -73,7 +98,7 @@ export function useIIIntegration({
       onSuccess: (id: DelegationIdentity) => {
         setIdentity(id);
         WebBrowser.dismissBrowser();
-        const path = pathWhenLoginRef.current;
+        const path = redirectPathRef.current;
         if (path) {
           router.replace(path);
         }
@@ -88,13 +113,18 @@ export function useIIIntegration({
     delegationStorage,
     onSuccess: setIdentity,
     onError: setAuthError,
+    router,
   });
 
-  const login = async () => {
+  const login = async (args: LoginArgs = {}) => {
     try {
       console.log('Logging in');
 
-      pathWhenLoginRef.current = currentPath;
+      if (args.hasOwnProperty('redirectPath')) {
+        redirectPathRef.current = args.redirectPath;
+      } else {
+        redirectPathRef.current = currentPath;
+      }
 
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());

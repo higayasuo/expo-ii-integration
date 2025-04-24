@@ -26,6 +26,9 @@ export type GetLoginInternalParams = {
   delegationStorage: DelegationChainValueStorageWrapper;
   onSuccess: (id: DelegationIdentity) => void;
   onError: (error: unknown) => void;
+  router: {
+    replace: (path: string) => void;
+  };
 };
 
 /**
@@ -39,6 +42,7 @@ export const getLoginInternal = ({
   delegationStorage,
   onSuccess,
   onError,
+  router,
 }: GetLoginInternalParams): LoginInternal => {
   if (platform === 'web') {
     return async (iiIntegrationURL: string) => {
@@ -64,6 +68,31 @@ export const getLoginInternal = ({
   }
 
   return async (iiIntegrationURL: string) => {
-    await WebBrowser.openBrowserAsync(iiIntegrationURL);
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(
+        iiIntegrationURL,
+        'myapp://',
+      );
+
+      if (result.type === 'success') {
+        const url = result.url;
+        await setupIdentityFromDelegation({
+          delegation: url,
+          delegationStorage,
+          appKeyStorage,
+          onSuccess: (identity) => {
+            onSuccess(identity);
+            if (router) {
+              router.replace(url);
+            }
+          },
+          onError,
+        });
+      } else {
+        onError(new Error('Login cancelled'));
+      }
+    } catch (error) {
+      onError(error instanceof Error ? error : new Error('Login failed'));
+    }
   };
 };

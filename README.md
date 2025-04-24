@@ -115,6 +115,34 @@ function AuthButton() {
 }
 ```
 
+### Login Function Arguments
+
+The `login` function accepts an optional object with the following properties:
+
+```typescript
+type LoginArgs = {
+  redirectPath?: string;
+};
+```
+
+- `redirectPath`: The path to redirect to after successful login
+  - If `redirectPath` is explicitly set to `undefined`, no redirection will occur
+  - If `redirectPath` is not provided, the current path will be used
+  - If `redirectPath` is provided with a path string, that path will be used
+
+Example usage:
+
+```tsx
+// Redirect to a specific path after login
+login({ redirectPath: '/dashboard' });
+
+// No redirection after login
+login({ redirectPath: undefined });
+
+// Use current path for redirection
+login();
+```
+
 ## API Reference
 
 ### useIIIntegration Hook
