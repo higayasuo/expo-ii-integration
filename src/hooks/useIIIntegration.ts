@@ -97,10 +97,16 @@ export function useIIIntegration({
       appKeyStorage,
       onSuccess: (id: DelegationIdentity) => {
         setIdentity(id);
-        WebBrowser.dismissBrowser();
         const path = redirectPathRef.current;
         if (path) {
+          // Navigate immediately before dismissing the browser
           router.replace(path);
+          // Small delay to ensure navigation starts
+          setTimeout(() => {
+            WebBrowser.dismissBrowser();
+          }, 500);
+        } else {
+          WebBrowser.dismissBrowser();
         }
       },
       onError: setAuthError,

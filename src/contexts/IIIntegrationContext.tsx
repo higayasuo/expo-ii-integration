@@ -6,7 +6,7 @@ export interface IIIntegrationContextType {
   identity: DelegationIdentity | undefined;
   isReady: boolean;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  login: (args?: { redirectPath?: string }) => Promise<void>;
   logout: () => Promise<void>;
   authError: unknown | undefined;
 }
