@@ -11,7 +11,8 @@ import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainVa
 import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { initialize } from './initialize';
 import { handleURL } from './handleURL';
-import { getLoginInternal } from './loginInternal';
+import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
+import { setupIdentityFromDelegation } from './setupIdentityFromDelegation';
 
 /**
  * Represents the parameters required for the useIIIntegration hook.
@@ -113,14 +114,6 @@ export function useIIIntegration({
     });
   }, [url]);
 
-  const loginInternal = getLoginInternal({
-    platform,
-    appKeyStorage,
-    delegationStorage,
-    onSuccess: setIdentity,
-    onError: setAuthError,
-  });
-
   const login = async (args: LoginArgs = {}) => {
     try {
       console.log('Logging in');
@@ -144,7 +137,31 @@ export function useIIIntegration({
         iiIntegrationCanisterId,
       });
 
-      await loginInternal(iiIntegrationURL);
+      if (platform === 'web') {
+        const messenger = new IIIntegrationMessenger();
+        messenger.on('success', async (response) => {
+          console.log('IIIntegration success');
+          await setupIdentityFromDelegation({
+            delegation: response.delegation,
+            delegationStorage,
+            appKeyStorage,
+            onSuccess: (id) => {
+              setIdentity(id);
+              const path = redirectPathRef.current;
+              if (path) {
+                router.replace(path);
+              }
+            },
+            onError: setAuthError,
+          });
+        });
+
+        await messenger.open({
+          url: iiIntegrationURL,
+        });
+      } else {
+        await WebBrowser.openBrowserAsync(iiIntegrationURL);
+      }
     } catch (error) {
       console.error('Login failed:', error);
       setAuthError(error);
