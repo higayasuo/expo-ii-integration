@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2025-04-26
+
+### Fixed
+
+- Fixed navigation issue on web platform:
+  - Login transition now properly occurs via the redirectPath
+  - Improved handling of navigation timing in web messenger flow
+  - Ensures consistent navigation behavior across platforms
+
+## [0.1.11] - 2025-04-24
+
+### Added
+
+- Added `redirectPath` parameter to `login()` function in `useIIIntegration` hook:
+  - Allows specifying a custom redirect path after successful login
+  - Falls back to current path if not specified
+  - Improves flexibility in navigation after authentication
+
 ## [0.1.10] - 2025-04-23
 
 ### Changed

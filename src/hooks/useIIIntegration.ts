@@ -151,6 +151,7 @@ export function useIIIntegration({
               if (path) {
                 router.replace(path);
               }
+              messenger.close();
             },
             onError: setAuthError,
           });
