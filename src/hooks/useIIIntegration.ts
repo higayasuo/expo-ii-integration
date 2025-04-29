@@ -21,6 +21,7 @@ import { StringValueStorageWrapper } from 'expo-storage-universal';
  * @property deepLink - The deep link URL for the integration
  * @property frontendCanisterId - The canister ID for the frontend
  * @property iiIntegrationCanisterId - The canister ID for the II integration
+ * @property authPath - The path for the II integration
  * @property appKeyStorage - The storage wrapper for the app key
  * @property delegationStorage - The storage wrapper for the delegation chain
  * @property redirectPathStorage - The storage wrapper for the redirect path
@@ -33,6 +34,7 @@ type UseIIIntegrationParams = {
   deepLink: string;
   frontendCanisterId: string;
   iiIntegrationCanisterId: string;
+  authPath: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
   redirectPathStorage: StringValueStorageWrapper;
@@ -59,6 +61,7 @@ export function useIIIntegration({
   deepLink,
   frontendCanisterId,
   iiIntegrationCanisterId,
+  authPath,
   appKeyStorage,
   delegationStorage,
   redirectPathStorage,
@@ -101,12 +104,12 @@ export function useIIIntegration({
 
     handleURL({
       url,
+      authPath,
       delegationStorage,
       appKeyStorage,
       onSuccess: async (id: DelegationIdentity) => {
         setIdentity(id);
         const path = await redirectPathStorage.find();
-        console.log('redirectPath when login is successful', path);
 
         if (path) {
           router.replace(path);
@@ -132,10 +135,6 @@ export function useIIIntegration({
     } else {
       await redirectPathStorage.save(currentPath);
     }
-    console.log(
-      'redirectPath when login is called',
-      await redirectPathStorage.find(),
-    );
   };
 
   const login = async (args: LoginArgs = {}) => {
@@ -154,6 +153,7 @@ export function useIIIntegration({
         deepLink,
         frontendCanisterId,
         iiIntegrationCanisterId,
+        authPath,
       });
 
       await WebBrowser.openBrowserAsync(iiIntegrationURL, {

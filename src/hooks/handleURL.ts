@@ -6,6 +6,7 @@ import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainVa
 
 type HandleURLParams = {
   url: string;
+  authPath: string;
   delegationStorage: DelegationChainValueStorageWrapper;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   onSuccess: (identity: DelegationIdentity) => void;
@@ -18,13 +19,17 @@ type HandleURLParams = {
  */
 export async function handleURL({
   url,
+  authPath,
   delegationStorage,
   appKeyStorage,
   onSuccess,
   onError,
 }: HandleURLParams): Promise<void> {
   try {
-    const delegation = parseDelegationFromURL(url);
+    const delegation = parseDelegationFromURL({
+      url,
+      authPath,
+    });
     console.log('Delegation from URL:', delegation ? 'present' : 'not present');
 
     if (delegation) {

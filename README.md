@@ -19,6 +19,7 @@ The library implements security measures to protect against:
 - Secure key and delegation chain management
 - Automatic path restoration after authentication
 - Error handling and state management
+- Support for multiple deep link paths
 
 ## Installation
 
@@ -90,6 +91,7 @@ function App() {
     delegationStorage,
     redirectPathStorage,
     platform: Platform.OS,
+    authPath: 'ii-integration', // Required: Path to distinguish authentication callbacks from other deep links
   });
 
   return (
@@ -164,6 +166,7 @@ type UseIIAuthParams = {
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
   delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain
   redirectPathStorage: StringValueStorageWrapper; // Storage for redirect path after login
+  authPath: string; // Required: Path to distinguish authentication callbacks from other deep links
 };
 ```
 

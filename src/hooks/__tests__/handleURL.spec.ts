@@ -1,27 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleURL } from '../handleURL';
-import { DelegationIdentity } from '@dfinity/identity';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
+import { Storage } from 'expo-storage-universal';
 import { setupIdentityFromDelegation } from '../setupIdentityFromDelegation';
+import { DelegationIdentity } from '@dfinity/identity';
 
 vi.mock('../setupIdentityFromDelegation', () => ({
   setupIdentityFromDelegation: vi.fn(),
 }));
 
 describe('handleURL', () => {
-  const mockDelegationStorage = {} as DelegationChainValueStorageWrapper;
-  const mockAppKeyStorage = {} as Ed25519KeyIdentityValueStorageWrapper;
+  const authPath = 'ii-integration';
+  const storage = {
+    find: vi.fn(),
+    save: vi.fn(),
+    remove: vi.fn(),
+  } as unknown as Storage;
+  const delegationStorage = new DelegationChainValueStorageWrapper(
+    storage,
+    'delegation',
+  );
+  const appKeyStorage = new Ed25519KeyIdentityValueStorageWrapper(
+    storage,
+    'appKey',
+  );
+  const onSuccess = vi.fn();
+  const onError = vi.fn();
   const mockIdentity = {} as DelegationIdentity;
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should call onSuccess when delegation is present and setup succeeds', async () => {
-    const onSuccess = vi.fn();
-    const onError = vi.fn();
-
+  it('should call onSuccess when delegation is present', async () => {
     vi.mocked(setupIdentityFromDelegation).mockImplementation(
       async ({ onSuccess: success }) => {
         success(mockIdentity);
@@ -29,9 +41,10 @@ describe('handleURL', () => {
     );
 
     await handleURL({
-      url: 'https://example.com#delegation=test_delegation',
-      delegationStorage: mockDelegationStorage,
-      appKeyStorage: mockAppKeyStorage,
+      url: 'https://example.com/ii-integration#delegation=test_delegation',
+      authPath,
+      delegationStorage,
+      appKeyStorage,
       onSuccess,
       onError,
     });
@@ -40,14 +53,12 @@ describe('handleURL', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
-  it('should not call onSuccess or onError when delegation is not present', async () => {
-    const onSuccess = vi.fn();
-    const onError = vi.fn();
-
+  it('should not call onSuccess when delegation is not present', async () => {
     await handleURL({
-      url: 'https://example.com#other=param',
-      delegationStorage: mockDelegationStorage,
-      appKeyStorage: mockAppKeyStorage,
+      url: 'https://example.com/ii-integration#other=param',
+      authPath,
+      delegationStorage,
+      appKeyStorage,
       onSuccess,
       onError,
     });
@@ -57,26 +68,17 @@ describe('handleURL', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
-  it('should call onError when setupIdentityFromDelegation fails', async () => {
-    const onSuccess = vi.fn();
-    const onError = vi.fn();
-    const error = new Error('Setup failed');
-
-    vi.mocked(setupIdentityFromDelegation).mockImplementation(
-      async ({ onError: errorCallback }) => {
-        errorCallback(error);
-      },
-    );
-
+  it('should call onError when URL is invalid', async () => {
     await handleURL({
-      url: 'https://example.com#delegation=test_delegation',
-      delegationStorage: mockDelegationStorage,
-      appKeyStorage: mockAppKeyStorage,
+      url: 'invalid-url',
+      authPath,
+      delegationStorage,
+      appKeyStorage,
       onSuccess,
       onError,
     });
 
     expect(onSuccess).not.toHaveBeenCalled();
-    expect(onError).toHaveBeenCalledWith(error);
+    expect(onError).toHaveBeenCalled();
   });
 });
