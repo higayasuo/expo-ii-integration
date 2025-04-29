@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { toHex } from '@dfinity/agent';
 import { DelegationIdentity } from '@dfinity/identity';
 import * as WebBrowser from 'expo-web-browser';
-import { useURL } from 'expo-linking';
+import * as Linking from 'expo-linking';
 import { usePathname, useRouter } from 'expo-router';
 
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
@@ -11,8 +11,7 @@ import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainVa
 import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { initialize } from './initialize';
 import { handleURL } from './handleURL';
-import { IIIntegrationMessenger } from '../messengers/IIIntegrationMessenger';
-import { setupIdentityFromDelegation } from './setupIdentityFromDelegation';
+import { StringValueStorageWrapper } from 'expo-storage-universal';
 
 /**
  * Represents the parameters required for the useIIIntegration hook.
@@ -24,6 +23,7 @@ import { setupIdentityFromDelegation } from './setupIdentityFromDelegation';
  * @property iiIntegrationCanisterId - The canister ID for the II integration
  * @property appKeyStorage - The storage wrapper for the app key
  * @property delegationStorage - The storage wrapper for the delegation chain
+ * @property redirectPathStorage - The storage wrapper for the redirect path
  * @property platform - The platform on which the integration is happening
  */
 type UseIIIntegrationParams = {
@@ -35,6 +35,7 @@ type UseIIIntegrationParams = {
   iiIntegrationCanisterId: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
+  redirectPathStorage: StringValueStorageWrapper;
   platform: string;
 };
 
@@ -60,9 +61,10 @@ export function useIIIntegration({
   iiIntegrationCanisterId,
   appKeyStorage,
   delegationStorage,
+  redirectPathStorage,
   platform,
 }: UseIIIntegrationParams) {
-  const url = useURL();
+  const url = Linking.useURL();
   const router = useRouter();
   const [identity, setIdentity] = useState<DelegationIdentity | undefined>(
     undefined,
@@ -72,7 +74,6 @@ export function useIIIntegration({
 
   // Login path management
   const currentPath = usePathname();
-  const redirectPathRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     initialize({
@@ -92,37 +93,55 @@ export function useIIIntegration({
       return;
     }
 
+    const dismissBrowser = () => {
+      if (platform === 'ios') {
+        WebBrowser.dismissBrowser();
+      }
+    };
+
     handleURL({
       url,
       delegationStorage,
       appKeyStorage,
-      onSuccess: (id: DelegationIdentity) => {
+      onSuccess: async (id: DelegationIdentity) => {
         setIdentity(id);
-        const path = redirectPathRef.current;
+        const path = await redirectPathStorage.find();
+        console.log('redirectPath when login is successful', path);
+
         if (path) {
-          // Navigate immediately before dismissing the browser
           router.replace(path);
           // Small delay to ensure navigation starts
           setTimeout(() => {
-            WebBrowser.dismissBrowser();
+            dismissBrowser();
           }, 500);
         } else {
-          WebBrowser.dismissBrowser();
+          dismissBrowser();
         }
       },
       onError: setAuthError,
     });
   }, [url]);
 
+  const saveRedirectPath = async (args: LoginArgs) => {
+    if (args.hasOwnProperty('redirectPath')) {
+      if (args.redirectPath) {
+        await redirectPathStorage.save(args.redirectPath);
+      } else {
+        await redirectPathStorage.remove();
+      }
+    } else {
+      await redirectPathStorage.save(currentPath);
+    }
+    console.log(
+      'redirectPath when login is called',
+      await redirectPathStorage.find(),
+    );
+  };
+
   const login = async (args: LoginArgs = {}) => {
     try {
       console.log('Logging in');
-
-      if (args.hasOwnProperty('redirectPath')) {
-        redirectPathRef.current = args.redirectPath;
-      } else {
-        redirectPathRef.current = currentPath;
-      }
+      await saveRedirectPath(args);
 
       const appKey = await appKeyStorage.retrieve();
       const pubkey = toHex(appKey.getPublicKey().toDer());
@@ -137,32 +156,9 @@ export function useIIIntegration({
         iiIntegrationCanisterId,
       });
 
-      if (platform === 'web') {
-        const messenger = new IIIntegrationMessenger();
-        messenger.on('success', async (response) => {
-          console.log('IIIntegration success');
-          await setupIdentityFromDelegation({
-            delegation: response.delegation,
-            delegationStorage,
-            appKeyStorage,
-            onSuccess: (id) => {
-              setIdentity(id);
-              const path = redirectPathRef.current;
-              if (path) {
-                router.replace(path);
-              }
-              messenger.close();
-            },
-            onError: setAuthError,
-          });
-        });
-
-        await messenger.open({
-          url: iiIntegrationURL,
-        });
-      } else {
-        await WebBrowser.openBrowserAsync(iiIntegrationURL);
-      }
+      await WebBrowser.openBrowserAsync(iiIntegrationURL, {
+        windowName: '_self',
+      });
     } catch (error) {
       console.error('Login failed:', error);
       setAuthError(error);

@@ -32,7 +32,6 @@ npm install expo-ii-integration
 {
   "@dfinity/agent": "^0.20.2",
   "@dfinity/identity": "^0.20.2",
-  "@higayasuo/iframe-messenger": "^0.1.0",
   "canister-manager": "^0.1.7",
   "expo-icp-frontend-helpers": "^0.1.4",
   "expo-linking": "~7.0",
@@ -53,7 +52,11 @@ npm install expo-ii-integration
 import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import { IIIntegrationProvider, useIIIntegration } from 'expo-ii-integration';
-import { AppKeyStorage, DelegationStorage } from 'expo-ii-integration/storage';
+import {
+  AppKeyStorage,
+  DelegationStorage,
+  RedirectPathStorage,
+} from 'expo-ii-integration/storage';
 import {
   LOCAL_IP_ADDRESS,
   DFX_NETWORK,
@@ -73,6 +76,7 @@ function App() {
 
   const appKeyStorage = new AppKeyStorage(secureStorage);
   const delegationStorage = new DelegationStorage(secureStorage);
+  const redirectPathStorage = new RedirectPathStorage(regularStorage);
 
   const deepLink = Linking.createURL('/');
   const iiIntegration = useIIIntegration({
@@ -84,6 +88,7 @@ function App() {
     iiIntegrationCanisterId: CANISTER_ID_II_INTEGRATION,
     appKeyStorage,
     delegationStorage,
+    redirectPathStorage,
     platform: Platform.OS,
   });
 
@@ -158,6 +163,7 @@ type UseIIAuthParams = {
   platform: string; // Platform identifier (e.g., 'ios', 'android', 'web')
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
   delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain
+  redirectPathStorage: StringValueStorageWrapper; // Storage for redirect path after login
 };
 ```
 
@@ -175,6 +181,14 @@ class AppKeyStorage extends Ed25519KeyIdentityValueStorageWrapper {
 
 ```typescript
 class DelegationStorage extends DelegationChainValueStorageWrapper {
+  constructor(storage: Storage);
+}
+```
+
+#### RedirectPathStorage
+
+```typescript
+class RedirectPathStorage extends StringValueStorageWrapper {
   constructor(storage: Storage);
 }
 ```

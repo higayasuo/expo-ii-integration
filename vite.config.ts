@@ -22,7 +22,6 @@ export default defineConfig({
         'expo-storage-universal',
         '@dfinity/agent',
         '@dfinity/identity',
-        '@higayasuo/iframe-messenger',
         'canister-manager',
         'expo-icp-frontend-helpers',
       ],
