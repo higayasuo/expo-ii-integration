@@ -11,7 +11,6 @@ type InitializeParams = {
   delegationStorage: DelegationChainValueStorageWrapper;
   onSuccess: (identity: DelegationIdentity) => void;
   onError: (error: unknown) => void;
-  onFinally: () => void;
 };
 
 /**
@@ -23,7 +22,6 @@ export const initialize = async ({
   delegationStorage,
   onSuccess,
   onError,
-  onFinally,
 }: InitializeParams): Promise<void> => {
   try {
     const id = await buildIdentityFromStorage({
@@ -36,7 +34,5 @@ export const initialize = async ({
     }
   } catch (error) {
     onError(error);
-  } finally {
-    onFinally();
   }
 };

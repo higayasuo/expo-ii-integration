@@ -5,27 +5,26 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { usePathname, useRouter } from 'expo-router';
 
-import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-
 import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { initialize } from './initialize';
 import { handleURL } from './handleURL';
-import { StringValueStorageWrapper } from 'expo-storage-universal';
+import { Storage } from 'expo-storage-universal';
+import { AppKeyStorage } from '../storage/AppKeyStorage';
+import { DelegationStorage } from '../storage/DelegationStorage';
+import { RedirectPathStorage } from '../storage/RedirectPathStorage';
 
 /**
- * Represents the parameters required for the useIIIntegration hook.
- * @property localIPAddress - The local IP address for the integration
- * @property dfxNetwork - The DFX network to use for the integration
- * @property easDeepLinkType - The type of deep link to use for the integration, if any
- * @property deepLink - The deep link URL for the integration
- * @property frontendCanisterId - The canister ID for the frontend
- * @property iiIntegrationCanisterId - The canister ID for the II integration
- * @property authPath - The path for the II integration
- * @property appKeyStorage - The storage wrapper for the app key
- * @property delegationStorage - The storage wrapper for the delegation chain
- * @property redirectPathStorage - The storage wrapper for the redirect path
- * @property platform - The platform on which the integration is happening
+ * Represents the parameters required for the II integration.
+ * @property {string} localIPAddress - The local IP address.
+ * @property {string} dfxNetwork - The DFX network.
+ * @property {string | undefined} easDeepLinkType - The EAS deep link type.
+ * @property {string} deepLink - The deep link.
+ * @property {string} frontendCanisterId - The frontend canister ID.
+ * @property {string} iiIntegrationCanisterId - The II integration canister ID.
+ * @property {string} authPath - The authentication path.
+ * @property {Storage} secureStorage - The secure storage.
+ * @property {Storage} regularStorage - The regular storage.
+ * @property {string} platform - The platform.
  */
 type UseIIIntegrationParams = {
   localIPAddress: string;
@@ -35,9 +34,8 @@ type UseIIIntegrationParams = {
   frontendCanisterId: string;
   iiIntegrationCanisterId: string;
   authPath: string;
-  appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
-  delegationStorage: DelegationChainValueStorageWrapper;
-  redirectPathStorage: StringValueStorageWrapper;
+  secureStorage: Storage;
+  regularStorage: Storage;
   platform: string;
 };
 
@@ -51,8 +49,12 @@ type LoginArgs = {
 
 /**
  * Hook for managing II integration.
- * @param params - The parameters required for the II integration
- * @returns An object containing the current identity, readiness state, authentication state, login function, logout function, and authentication error
+ *
+ * This hook initializes the II integration process, handles URL changes for login callbacks,
+ * and provides functions for logging in and out. It also manages the redirect path after login.
+ *
+ * @param {UseIIIntegrationParams} params - The parameters required for the II integration.
+ * @returns An object containing the current identity, authentication status, login function, logout function, and any authentication error.
  */
 export function useIIIntegration({
   localIPAddress,
@@ -62,9 +64,8 @@ export function useIIIntegration({
   frontendCanisterId,
   iiIntegrationCanisterId,
   authPath,
-  appKeyStorage,
-  delegationStorage,
-  redirectPathStorage,
+  secureStorage,
+  regularStorage,
   platform,
 }: UseIIIntegrationParams) {
   const url = Linking.useURL();
@@ -73,10 +74,13 @@ export function useIIIntegration({
     undefined,
   );
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
-  const [isReady, setIsReady] = useState(false);
 
   // Login path management
   const currentPath = usePathname();
+
+  const appKeyStorage = new AppKeyStorage(secureStorage);
+  const delegationStorage = new DelegationStorage(secureStorage);
+  const redirectPathStorage = new RedirectPathStorage(regularStorage);
 
   useEffect(() => {
     initialize({
@@ -84,9 +88,6 @@ export function useIIIntegration({
       delegationStorage,
       onSuccess: setIdentity,
       onError: setAuthError,
-      onFinally: () => {
-        setIsReady(true);
-      },
     });
   }, []);
 
@@ -178,7 +179,6 @@ export function useIIIntegration({
 
   return {
     identity,
-    isReady,
     isAuthenticated: !!identity,
     login,
     logout,
