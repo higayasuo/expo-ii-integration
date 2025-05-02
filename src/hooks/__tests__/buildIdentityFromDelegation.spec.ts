@@ -15,7 +15,7 @@ vi.mock('expo-icp-frontend-helpers', () => ({
 }));
 
 describe('buildIdentityFromDelegation', () => {
-  it('should build identity from valid delegation', async () => {
+  it('should build identity from valid delegation and save delegation only when buildIdentity succeeds', async () => {
     // Create test app key
     const appKey = Ed25519KeyIdentity.generate();
     const appKeyStorage = {
@@ -48,6 +48,44 @@ describe('buildIdentityFromDelegation', () => {
 
     expect(identity).toBeInstanceOf(DelegationIdentity);
     expect(delegationStorage.save).toHaveBeenCalledWith(delegationChain);
+    expect(appKeyStorage.retrieve).toHaveBeenCalled();
+    expect(buildIdentity).toHaveBeenCalledWith({
+      appKey,
+      delegationChain,
+    });
+  });
+
+  it('should not save delegation when buildIdentity fails', async () => {
+    // Create test app key
+    const appKey = Ed25519KeyIdentity.generate();
+    const appKeyStorage = {
+      retrieve: vi.fn().mockResolvedValue(appKey),
+    } as unknown as Ed25519KeyIdentityValueStorageWrapper;
+
+    // Create test delegation chain
+    const delegationKey = Ed25519KeyIdentity.generate();
+    const delegationChain = await DelegationChain.create(
+      delegationKey,
+      appKey.getPublicKey(),
+      new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day from now
+    );
+    const delegationStorage = {
+      save: vi.fn().mockResolvedValue(undefined),
+    } as unknown as DelegationChainValueStorageWrapper;
+
+    // Mock the buildIdentity function to throw an error
+    const error = new Error('Build failed');
+    vi.mocked(buildIdentity).mockRejectedValue(error);
+
+    await expect(
+      buildIdentityFromDelegation({
+        delegation: JSON.stringify(delegationChain.toJSON()),
+        delegationStorage,
+        appKeyStorage,
+      }),
+    ).rejects.toThrow('Build failed');
+
+    expect(delegationStorage.save).not.toHaveBeenCalled();
     expect(appKeyStorage.retrieve).toHaveBeenCalled();
     expect(buildIdentity).toHaveBeenCalledWith({
       appKey,

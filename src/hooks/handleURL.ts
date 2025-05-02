@@ -1,15 +1,13 @@
 import { parseDelegationFromURL } from './parseDelegationFromURL';
-import { setupIdentityFromDelegation } from './setupIdentityFromDelegation';
-import { DelegationIdentity } from '@dfinity/identity';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
+import { buildIdentityFromDelegation } from './buildIdentityFromDelegation';
 
 type HandleURLParams = {
   url: string;
-  authPath: string;
   delegationStorage: DelegationChainValueStorageWrapper;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
-  onSuccess: (identity: DelegationIdentity) => void;
+  onSuccess: () => void;
   onError: (error: unknown) => void;
 };
 
@@ -17,32 +15,31 @@ type HandleURLParams = {
  * Handles URL processing and delegation setup.
  * @param params - Parameters for URL handling
  */
-export async function handleURL({
+export const handleURL = async ({
   url,
-  authPath,
   delegationStorage,
   appKeyStorage,
   onSuccess,
   onError,
-}: HandleURLParams): Promise<void> {
+}: HandleURLParams): Promise<void> => {
   try {
-    const delegation = parseDelegationFromURL({
-      url,
-      authPath,
-    });
+    console.log('Handling URL:', url);
+
+    const delegation = parseDelegationFromURL(url);
     console.log('Delegation from URL:', delegation ? 'present' : 'not present');
 
     if (delegation) {
-      await setupIdentityFromDelegation({
+      await buildIdentityFromDelegation({
         delegation,
         delegationStorage,
         appKeyStorage,
-        onSuccess,
-        onError,
       });
+
+      console.log('Authenticated from delegation');
+      onSuccess();
     }
   } catch (error) {
     console.error('Failed to handle URL:', error);
     onError(error);
   }
-}
+};

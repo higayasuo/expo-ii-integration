@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Required parameter for proper deep link handling
   - Improves support for multiple deep link paths in the application
 
+### Changed
+
+- Refactored `useIIIntegration` hook parameters:
+  - Removed `appKeyStorage`, `delegationStorage`, and `redirectPathStorage` parameters
+  - Added `secureStorage` and `regularStorage` parameters for better storage management
+  - Improved type safety with new `UseIIIntegrationResult` type
+- Updated `logout` function:
+  - Moved to separate file for better code organization
+  - Added object parameter pattern for better extensibility
+  - Improved error handling with `onError` callback
+- Improved documentation:
+  - Updated README.md to reflect current implementation
+  - Added detailed type definitions and usage examples
+  - Improved code formatting and readability
+
 ## [0.1.13] - 2025-04-29
 
 ### Changed

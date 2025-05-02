@@ -1,7 +1,6 @@
-import { DelegationIdentity } from '@dfinity/identity';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-import { buildIdentityFromStorage } from './buildIdentityFromStorage';
+import { Ed25519KeyIdentity } from '@dfinity/identity';
 
 /**
  * Parameters for the initialize function.
@@ -9,8 +8,9 @@ import { buildIdentityFromStorage } from './buildIdentityFromStorage';
 type InitializeParams = {
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   delegationStorage: DelegationChainValueStorageWrapper;
-  onSuccess: (identity: DelegationIdentity) => void;
+  onSuccess: () => void;
   onError: (error: unknown) => void;
+  onFinally: () => void;
 };
 
 /**
@@ -22,17 +22,26 @@ export const initialize = async ({
   delegationStorage,
   onSuccess,
   onError,
+  onFinally,
 }: InitializeParams): Promise<void> => {
   try {
-    const id = await buildIdentityFromStorage({
-      appKeyStorage,
-      delegationStorage,
-    });
+    const appKey = await appKeyStorage.find();
 
-    if (id) {
-      onSuccess(id);
+    if (!appKey) {
+      const key = await Ed25519KeyIdentity.generate();
+      await appKeyStorage.save(key);
+      console.log('Generated new app key');
+      return;
+    }
+
+    const delegation = await delegationStorage.find();
+
+    if (appKey && delegation) {
+      onSuccess();
     }
   } catch (error) {
     onError(error);
+  } finally {
+    onFinally();
   }
 };

@@ -10,7 +10,6 @@ describe('buildIIIntegrationURL', () => {
     deepLink: 'exp://192.168.1.210:8081',
     frontendCanisterId: 'test-frontend-canister-id',
     iiIntegrationCanisterId: 'test-ii-integration-canister-id',
-    authPath: 'ii-integration',
   };
 
   it('should return a valid URL with correct base path', () => {
@@ -18,18 +17,7 @@ describe('buildIIIntegrationURL', () => {
     const url = new URL(result);
 
     expect(url.origin).toBe('https://192.168.1.210:14943');
-    expect(url.pathname).toBe('/ii-integration');
-  });
-
-  it('should handle authPath that starts with a forward slash', () => {
-    const result = buildIIIntegrationURL({
-      ...mockArgs,
-      authPath: '/ii-integration',
-    });
-    const url = new URL(result);
-
-    expect(url.origin).toBe('https://192.168.1.210:14943');
-    expect(url.pathname).toBe('/ii-integration');
+    expect(url.pathname).toBe('/');
   });
 
   it('should include correct query parameters', () => {

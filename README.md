@@ -75,10 +75,6 @@ function App() {
     ? new WebRegularStorage()
     : new NativeRegularStorage();
 
-  const appKeyStorage = new AppKeyStorage(secureStorage);
-  const delegationStorage = new DelegationStorage(secureStorage);
-  const redirectPathStorage = new RedirectPathStorage(regularStorage);
-
   const deepLink = Linking.createURL('/');
   const iiIntegration = useIIIntegration({
     localIPAddress: LOCAL_IP_ADDRESS,
@@ -87,11 +83,10 @@ function App() {
     deepLink,
     frontendCanisterId: CANISTER_ID_FRONTEND,
     iiIntegrationCanisterId: CANISTER_ID_II_INTEGRATION,
-    appKeyStorage,
-    delegationStorage,
-    redirectPathStorage,
-    platform: Platform.OS,
     authPath: 'ii-integration', // Required: Path to distinguish authentication callbacks from other deep links
+    secureStorage,
+    regularStorage,
+    platform: Platform.OS,
   });
 
   return (
@@ -108,10 +103,16 @@ function App() {
 import { useIIIntegrationContext } from 'expo-ii-integration';
 
 function AuthButton() {
-  const { login, logout, isAuthenticated, isReady, identity, authError } =
-    useIIIntegrationContext();
+  const {
+    login,
+    logout,
+    isAuthenticated,
+    isAuthReady,
+    getIdentity,
+    authError,
+  } = useIIIntegrationContext();
 
-  if (!isReady) return null;
+  if (!isAuthReady) return null;
 
   return (
     <Button
@@ -155,18 +156,26 @@ login();
 ### useIIIntegration Hook
 
 ```typescript
-type UseIIAuthParams = {
+type UseIIIntegrationParams = {
   localIPAddress: string; // Local IP address for development
   dfxNetwork: string; // dfx network (e.g., 'local', 'ic')
   easDeepLinkType?: string; // EAS deep link type ('legacy' or 'modern')
   deepLink: string; // Deep link to determine the type
   frontendCanisterId: string; // Frontend canister ID
   iiIntegrationCanisterId: string; // II Integration canister ID
-  platform: string; // Platform identifier (e.g., 'ios', 'android', 'web')
-  appKeyStorage: Ed25519KeyIdentityValueStorageWrapper; // Storage for app's key identity
-  delegationStorage: DelegationChainValueStorageWrapper; // Storage for delegation chain
-  redirectPathStorage: StringValueStorageWrapper; // Storage for redirect path after login
   authPath: string; // Required: Path to distinguish authentication callbacks from other deep links
+  secureStorage: Storage; // Secure storage for sensitive data
+  regularStorage: Storage; // Regular storage for non-sensitive data
+  platform: string; // Platform identifier (e.g., 'ios', 'android', 'web')
+};
+
+type UseIIIntegrationResult = {
+  isAuthReady: boolean; // Whether the authentication system is ready
+  isAuthenticated: boolean; // Whether the user is authenticated
+  getIdentity: () => Promise<Identity | undefined>; // Get the current identity
+  login: (args?: LoginArgs) => Promise<void>; // Login function
+  logout: () => Promise<void>; // Logout function
+  authError: unknown | undefined; // Any authentication error
 };
 ```
 

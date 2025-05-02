@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
-import { toHex } from '@dfinity/agent';
-import { DelegationIdentity } from '@dfinity/identity';
-import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import { usePathname, useRouter } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 
-import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { initialize } from './initialize';
 import { handleURL } from './handleURL';
 import { Storage } from 'expo-storage-universal';
 import { AppKeyStorage } from '../storage/AppKeyStorage';
 import { DelegationStorage } from '../storage/DelegationStorage';
 import { RedirectPathStorage } from '../storage/RedirectPathStorage';
-
+import { getIdentity } from './getIdentity';
+import { login } from './login';
+import { LoginOuterParams } from '../types';
+import { logout } from './logout';
+import { IIIntegrationType } from '../types';
+import { dismissBrowser } from './dismissBrowser';
 /**
  * Represents the parameters required for the II integration.
  * @property {string} localIPAddress - The local IP address.
@@ -33,18 +34,8 @@ type UseIIIntegrationParams = {
   deepLink: string;
   frontendCanisterId: string;
   iiIntegrationCanisterId: string;
-  authPath: string;
   secureStorage: Storage;
   regularStorage: Storage;
-  platform: string;
-};
-
-/**
- * Represents the arguments for the login function.
- * @property redirectPath - The path to redirect to after login, if any
- */
-type LoginArgs = {
-  redirectPath?: string;
 };
 
 /**
@@ -54,25 +45,21 @@ type LoginArgs = {
  * and provides functions for logging in and out. It also manages the redirect path after login.
  *
  * @param {UseIIIntegrationParams} params - The parameters required for the II integration.
- * @returns An object containing the current identity, authentication status, login function, logout function, and any authentication error.
+ * @returns {IIIntegrationType} An object containing the current identity, authentication status, login function, logout function, and any authentication error.
  */
-export function useIIIntegration({
+export const useIIIntegration = ({
   localIPAddress,
   dfxNetwork,
   easDeepLinkType,
   deepLink,
   frontendCanisterId,
   iiIntegrationCanisterId,
-  authPath,
   secureStorage,
   regularStorage,
-  platform,
-}: UseIIIntegrationParams) {
+}: UseIIIntegrationParams): IIIntegrationType => {
   const url = Linking.useURL();
-  const router = useRouter();
-  const [identity, setIdentity] = useState<DelegationIdentity | undefined>(
-    undefined,
-  );
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
 
   // Login path management
@@ -83,33 +70,33 @@ export function useIIIntegration({
   const redirectPathStorage = new RedirectPathStorage(regularStorage);
 
   useEffect(() => {
+    if (isAuthReady) {
+      return;
+    }
+
     initialize({
       appKeyStorage,
       delegationStorage,
-      onSuccess: setIdentity,
+      onSuccess: () => {
+        setIsAuthenticated(true);
+      },
       onError: setAuthError,
+      onFinally: () => setIsAuthReady(true),
     });
   }, []);
 
   // Handle URL changes for login callback
   useEffect(() => {
-    if (identity || !url) {
+    if (isAuthenticated || !url) {
       return;
     }
 
-    const dismissBrowser = () => {
-      if (platform === 'ios') {
-        WebBrowser.dismissBrowser();
-      }
-    };
-
     handleURL({
       url,
-      authPath,
       delegationStorage,
       appKeyStorage,
-      onSuccess: async (id: DelegationIdentity) => {
-        setIdentity(id);
+      onSuccess: async () => {
+        setIsAuthenticated(true);
         const path = await redirectPathStorage.find();
 
         if (path) {
@@ -126,62 +113,34 @@ export function useIIIntegration({
     });
   }, [url]);
 
-  const saveRedirectPath = async (args: LoginArgs) => {
-    if (args.hasOwnProperty('redirectPath')) {
-      if (args.redirectPath) {
-        await redirectPathStorage.save(args.redirectPath);
-      } else {
-        await redirectPathStorage.remove();
-      }
-    } else {
-      await redirectPathStorage.save(currentPath);
-    }
-  };
-
-  const login = async (args: LoginArgs = {}) => {
-    try {
-      console.log('Logging in');
-      await saveRedirectPath(args);
-
-      const appKey = await appKeyStorage.retrieve();
-      const pubkey = toHex(appKey.getPublicKey().toDer());
-
-      const iiIntegrationURL = buildIIIntegrationURL({
-        pubkey,
+  return {
+    isAuthReady,
+    isAuthenticated,
+    getIdentity: () =>
+      getIdentity({
+        appKeyStorage,
+        delegationStorage,
+        onError: () => setIsAuthenticated(false),
+      }),
+    login: (loginOuterParams: LoginOuterParams = {}) =>
+      login({
         localIPAddress,
         dfxNetwork,
         easDeepLinkType,
         deepLink,
         frontendCanisterId,
         iiIntegrationCanisterId,
-        authPath,
-      });
-
-      await WebBrowser.openBrowserAsync(iiIntegrationURL, {
-        windowName: '_self',
-      });
-    } catch (error) {
-      console.error('Login failed:', error);
-      setAuthError(error);
-    }
-  };
-
-  const logout = async () => {
-    console.log('Logging out');
-    try {
-      await delegationStorage.remove();
-      setIdentity(undefined);
-      console.log('identity set to undefined after logout');
-    } catch (error) {
-      setAuthError(error);
-    }
-  };
-
-  return {
-    identity,
-    isAuthenticated: !!identity,
-    login,
-    logout,
+        appKeyStorage,
+        redirectPathStorage,
+        currentPath,
+        loginOuterParams,
+      }),
+    logout: () =>
+      logout({
+        delegationStorage,
+        onFinally: () => setIsAuthenticated(false),
+      }),
     authError,
+    clearAuthError: () => setAuthError(undefined),
   };
-}
+};

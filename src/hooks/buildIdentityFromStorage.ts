@@ -45,8 +45,6 @@ export const buildIdentityFromStorage = async ({
     } catch (error) {
       if (isAuthenticationExpiredError(error)) {
         await delegationStorage.remove();
-        console.log('Authentication expired, removing delegation chain');
-        return undefined;
       }
 
       throw error;

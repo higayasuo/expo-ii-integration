@@ -18,13 +18,13 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run typecheck && vite build",
     "test": "vitest --run",
     "test:watch": "vitest watch",
     "coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "prepare": "npm run build && npm test"
+    "prepare": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -62,7 +62,7 @@
     "@dfinity/agent": "^0.20.2",
     "@dfinity/identity": "^0.20.2",
     "canister-manager": "^0.1.7",
-    "expo-icp-frontend-helpers": "^0.1.4",
+    "expo-icp-frontend-helpers": "^0.1.8",
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.20",
     "expo-storage-universal": "^0.3.3",

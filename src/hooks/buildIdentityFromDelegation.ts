@@ -33,11 +33,13 @@ export const buildIdentityFromDelegation = async ({
   appKeyStorage,
 }: BuildIdentityFromDelegationArgs): Promise<DelegationIdentity> => {
   const delegationChain = DelegationChain.fromJSON(delegation);
-  await delegationStorage.save(delegationChain);
   const appKey = await appKeyStorage.retrieve();
 
-  return buildIdentity({
+  const id = await buildIdentity({
     appKey,
     delegationChain,
   });
+  await delegationStorage.save(delegationChain);
+
+  return id;
 };

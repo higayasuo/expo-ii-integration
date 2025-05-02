@@ -1,9 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  DelegationIdentity,
-  Ed25519KeyIdentity,
-  DelegationChain,
-} from '@dfinity/identity';
+import { describe, it, expect, vi } from 'vitest';
+import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
 import { buildIdentityFromStorage } from '../buildIdentityFromStorage';
 import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
@@ -18,110 +14,111 @@ vi.mock('expo-icp-frontend-helpers', () => ({
 }));
 
 describe('buildIdentityFromStorage', () => {
-  let mockAppKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
-  let mockDelegationStorage: DelegationChainValueStorageWrapper;
-  let mockAppKey: Ed25519KeyIdentity;
-  let mockDelegationChain: DelegationChain;
-  let mockDelegationIdentity: DelegationIdentity;
-
-  beforeEach(() => {
-    mockAppKey = Ed25519KeyIdentity.generate();
-    mockDelegationChain = {} as DelegationChain;
-    mockDelegationIdentity = {} as DelegationIdentity;
-
-    mockAppKeyStorage = {
-      find: vi.fn(),
-      save: vi.fn(),
+  it('should build identity when both app key and delegation exist', async () => {
+    const appKey = Ed25519KeyIdentity.generate();
+    const appKeyStorage = {
+      find: vi.fn().mockResolvedValue(appKey),
     } as unknown as Ed25519KeyIdentityValueStorageWrapper;
 
-    mockDelegationStorage = {
-      find: vi.fn(),
-      remove: vi.fn(),
+    const delegationChain = {
+      toJSON: vi.fn().mockReturnValue({ delegations: [] }),
+    };
+    const delegationStorage = {
+      find: vi.fn().mockResolvedValue(delegationChain),
     } as unknown as DelegationChainValueStorageWrapper;
 
-    vi.mocked(buildIdentity).mockResolvedValue(mockDelegationIdentity);
-    vi.mocked(isAuthenticationExpiredError).mockReturnValue(false);
-  });
+    const mockIdentity = {} as DelegationIdentity;
+    vi.mocked(buildIdentity).mockResolvedValue(mockIdentity);
 
-  it('should return DelegationIdentity when both app key and delegation chain exist', async () => {
-    vi.mocked(mockAppKeyStorage.find).mockResolvedValue(mockAppKey);
-    vi.mocked(mockDelegationStorage.find).mockResolvedValue(
-      mockDelegationChain,
-    );
-
-    const result = await buildIdentityFromStorage({
-      appKeyStorage: mockAppKeyStorage,
-      delegationStorage: mockDelegationStorage,
+    const identity = await buildIdentityFromStorage({
+      appKeyStorage,
+      delegationStorage,
     });
 
-    expect(result).toBe(mockDelegationIdentity);
+    expect(identity).toBe(mockIdentity);
+    expect(appKeyStorage.find).toHaveBeenCalled();
+    expect(delegationStorage.find).toHaveBeenCalled();
     expect(buildIdentity).toHaveBeenCalledWith({
-      appKey: mockAppKey,
-      delegationChain: mockDelegationChain,
+      appKey,
+      delegationChain,
     });
   });
 
-  it('should generate and save new app key and remove delegation chain when app key does not exist', async () => {
-    vi.mocked(mockAppKeyStorage.find).mockResolvedValue(undefined);
-    vi.mocked(mockDelegationStorage.find).mockResolvedValue(
-      mockDelegationChain,
-    );
+  it('should generate and save new app key when app key does not exist', async () => {
+    const appKeyStorage = {
+      find: vi.fn().mockResolvedValue(undefined),
+      save: vi.fn().mockResolvedValue(undefined),
+    } as unknown as Ed25519KeyIdentityValueStorageWrapper;
 
-    const result = await buildIdentityFromStorage({
-      appKeyStorage: mockAppKeyStorage,
-      delegationStorage: mockDelegationStorage,
+    const delegationStorage = {
+      find: vi.fn().mockResolvedValue(undefined),
+      remove: vi.fn().mockResolvedValue(undefined),
+    } as unknown as DelegationChainValueStorageWrapper;
+
+    const identity = await buildIdentityFromStorage({
+      appKeyStorage,
+      delegationStorage,
     });
 
-    expect(result).toBeUndefined();
-    expect(mockAppKeyStorage.save).toHaveBeenCalled();
-    expect(mockDelegationStorage.remove).toHaveBeenCalled();
+    expect(identity).toBeUndefined();
+    expect(appKeyStorage.find).toHaveBeenCalled();
+    expect(appKeyStorage.save).toHaveBeenCalled();
+    expect(delegationStorage.remove).toHaveBeenCalled();
   });
 
-  it('should return undefined when delegation chain does not exist', async () => {
-    vi.mocked(mockAppKeyStorage.find).mockResolvedValue(mockAppKey);
-    vi.mocked(mockDelegationStorage.find).mockResolvedValue(undefined);
+  it('should remove delegation and throw error when authentication is expired', async () => {
+    const appKey = Ed25519KeyIdentity.generate();
+    const appKeyStorage = {
+      find: vi.fn().mockResolvedValue(appKey),
+    } as unknown as Ed25519KeyIdentityValueStorageWrapper;
 
-    const result = await buildIdentityFromStorage({
-      appKeyStorage: mockAppKeyStorage,
-      delegationStorage: mockDelegationStorage,
-    });
+    const delegationChain = {
+      toJSON: vi.fn().mockReturnValue({ delegations: [] }),
+    };
+    const delegationStorage = {
+      find: vi.fn().mockResolvedValue(delegationChain),
+      remove: vi.fn().mockResolvedValue(undefined),
+    } as unknown as DelegationChainValueStorageWrapper;
 
-    expect(result).toBeUndefined();
-    expect(mockAppKeyStorage.save).not.toHaveBeenCalled();
-    expect(mockDelegationStorage.remove).not.toHaveBeenCalled();
-  });
-
-  it('should remove delegation chain and return undefined when authentication is expired', async () => {
-    vi.mocked(mockAppKeyStorage.find).mockResolvedValue(mockAppKey);
-    vi.mocked(mockDelegationStorage.find).mockResolvedValue(
-      mockDelegationChain,
-    );
-    vi.mocked(buildIdentity).mockRejectedValue('Authentication expired');
+    const error = new Error('Authentication expired');
+    vi.mocked(buildIdentity).mockRejectedValue(error);
     vi.mocked(isAuthenticationExpiredError).mockReturnValue(true);
 
-    const result = await buildIdentityFromStorage({
-      appKeyStorage: mockAppKeyStorage,
-      delegationStorage: mockDelegationStorage,
-    });
+    await expect(
+      buildIdentityFromStorage({
+        appKeyStorage,
+        delegationStorage,
+      }),
+    ).rejects.toThrow('Authentication expired');
 
-    expect(result).toBeUndefined();
-    expect(mockDelegationStorage.remove).toHaveBeenCalled();
+    expect(delegationStorage.remove).toHaveBeenCalled();
   });
 
-  it('should propagate error when non-authentication error occurs', async () => {
-    vi.mocked(mockAppKeyStorage.find).mockResolvedValue(mockAppKey);
-    vi.mocked(mockDelegationStorage.find).mockResolvedValue(
-      mockDelegationChain,
-    );
-    vi.mocked(buildIdentity).mockRejectedValue('Some other error');
+  it('should throw error without removing delegation when error is not authentication expired', async () => {
+    const appKey = Ed25519KeyIdentity.generate();
+    const appKeyStorage = {
+      find: vi.fn().mockResolvedValue(appKey),
+    } as unknown as Ed25519KeyIdentityValueStorageWrapper;
+
+    const delegationChain = {
+      toJSON: vi.fn().mockReturnValue({ delegations: [] }),
+    };
+    const delegationStorage = {
+      find: vi.fn().mockResolvedValue(delegationChain),
+      remove: vi.fn().mockResolvedValue(undefined),
+    } as unknown as DelegationChainValueStorageWrapper;
+
+    const error = new Error('Other error');
+    vi.mocked(buildIdentity).mockRejectedValue(error);
     vi.mocked(isAuthenticationExpiredError).mockReturnValue(false);
 
     await expect(
       buildIdentityFromStorage({
-        appKeyStorage: mockAppKeyStorage,
-        delegationStorage: mockDelegationStorage,
+        appKeyStorage,
+        delegationStorage,
       }),
-    ).rejects.toThrow('Some other error');
-    expect(mockDelegationStorage.remove).not.toHaveBeenCalled();
+    ).rejects.toThrow('Other error');
+
+    expect(delegationStorage.remove).not.toHaveBeenCalled();
   });
 });

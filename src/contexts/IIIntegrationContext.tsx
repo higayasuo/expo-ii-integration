@@ -1,23 +1,13 @@
 import React, { createContext, useContext } from 'react';
-import { DelegationIdentity } from '@dfinity/identity';
-
-// Define the context type explicitly
-export interface IIIntegrationContextType {
-  identity: DelegationIdentity | undefined;
-  isReady: boolean;
-  isAuthenticated: boolean;
-  login: (args?: { redirectPath?: string }) => Promise<void>;
-  logout: () => Promise<void>;
-  authError: unknown | undefined;
-}
+import { IIIntegrationType } from '../types';
 
 // Create the context with undefined as default value
-const IIIntegrationContext = createContext<
-  IIIntegrationContextType | undefined
->(undefined);
+const IIIntegrationContext = createContext<IIIntegrationType | undefined>(
+  undefined,
+);
 
 // Hook to use the context
-export const useIIIntegrationContext = (): IIIntegrationContextType => {
+export const useIIIntegrationContext = (): IIIntegrationType => {
   const context = useContext(IIIntegrationContext);
   if (context === undefined) {
     throw new Error(
@@ -30,7 +20,7 @@ export const useIIIntegrationContext = (): IIIntegrationContextType => {
 // Provider component
 interface IIIntegrationProviderProps {
   children: React.ReactNode;
-  value: IIIntegrationContextType;
+  value: IIIntegrationType;
 }
 
 export const IIIntegrationProvider = ({
