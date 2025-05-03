@@ -31,16 +31,16 @@ npm install expo-ii-integration
 
 ```json
 {
-  "@dfinity/agent": "^0.20.2",
-  "@dfinity/identity": "^0.20.2",
-  "canister-manager": "^0.1.7",
-  "expo-icp-frontend-helpers": "^0.1.8",
-  "expo-linking": "~7.0.5",
-  "expo-router": "~4.0.20",
-  "expo-storage-universal": "^0.3.3",
-  "expo-web-browser": "~14.0",
-  "react": "18.3.1",
-  "react-native": "0.76.9"
+  "@dfinity/agent",
+  "@dfinity/identity",
+  "canister-manager",
+  "expo-icp-frontend-helpers",
+  "expo-linking",
+  "expo-router",
+  "expo-storage-universal",
+  "expo-web-browser",
+  "react",
+  "react-native"
 }
 ```
 
