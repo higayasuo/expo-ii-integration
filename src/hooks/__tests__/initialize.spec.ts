@@ -5,12 +5,6 @@ import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChai
 import { Storage } from 'expo-storage-universal';
 import { Ed25519KeyIdentity, DelegationChain } from '@dfinity/identity';
 
-vi.mock('@dfinity/identity', () => ({
-  Ed25519KeyIdentity: {
-    generate: vi.fn(),
-  },
-}));
-
 describe('initialize', () => {
   const mockStorage = {
     find: vi.fn(),
@@ -32,31 +26,6 @@ describe('initialize', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('should generate and save new appKey when not found', async () => {
-    const generatedKey = {} as unknown as Ed25519KeyIdentity;
-
-    mockAppKeyStorage.find = vi.fn().mockResolvedValue(undefined);
-    mockAppKeyStorage.save = vi.fn().mockResolvedValue(undefined);
-    mockDelegationStorage.find = vi.fn().mockResolvedValue(undefined);
-    Ed25519KeyIdentity.generate = vi.fn().mockResolvedValue(generatedKey);
-
-    await initialize({
-      appKeyStorage: mockAppKeyStorage,
-      delegationStorage: mockDelegationStorage,
-      onSuccess,
-      onError,
-      onFinally,
-    });
-
-    expect(mockAppKeyStorage.find).toHaveBeenCalled();
-    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
-    expect(mockAppKeyStorage.save).toHaveBeenCalledWith(generatedKey);
-    expect(mockDelegationStorage.find).not.toHaveBeenCalled();
-    expect(onSuccess).not.toHaveBeenCalled();
-    expect(onError).not.toHaveBeenCalled();
-    expect(onFinally).toHaveBeenCalled();
   });
 
   it('should call onSuccess when both appKey and delegation are found', async () => {

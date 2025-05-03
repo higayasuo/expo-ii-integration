@@ -19,9 +19,15 @@ vi.mock('../saveRedirectPath', () => ({
   saveRedirectPath: vi.fn(),
 }));
 
+vi.mock('@dfinity/identity', () => ({
+  Ed25519KeyIdentity: {
+    generate: vi.fn(),
+  },
+}));
+
 describe('login', () => {
   const appKeyStorage = {
-    retrieve: vi.fn(),
+    save: vi.fn().mockResolvedValue(undefined),
   } as unknown as Ed25519KeyIdentityValueStorageWrapper;
 
   const redirectPathStorage = {
@@ -41,6 +47,9 @@ describe('login', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (appKeyStorage.save as ReturnType<typeof vi.fn>).mockResolvedValue(
+      undefined,
+    );
   });
 
   it('should open browser when login is successful', async () => {
@@ -55,7 +64,7 @@ describe('login', () => {
     } as unknown as Ed25519KeyIdentity;
     const mockIIIntegrationURL = 'https://example.com';
 
-    vi.mocked(appKeyStorage.retrieve).mockResolvedValue(mockAppKey);
+    vi.mocked(Ed25519KeyIdentity.generate).mockResolvedValue(mockAppKey);
     vi.mocked(buildIIIntegrationURL).mockReturnValue(mockIIIntegrationURL);
     vi.mocked(openBrowser).mockResolvedValue(undefined);
     vi.mocked(saveRedirectPath).mockResolvedValue(undefined);
@@ -71,7 +80,8 @@ describe('login', () => {
       loginOuterParams: { redirectPath: '/dashboard' },
       redirectPathStorage,
     });
-    expect(appKeyStorage.retrieve).toHaveBeenCalled();
+    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
+    expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(buildIIIntegrationURL).toHaveBeenCalledWith({
       pubkey: '010203',
       localIPAddress: '127.0.0.1',
@@ -84,9 +94,9 @@ describe('login', () => {
     expect(openBrowser).toHaveBeenCalledWith(mockIIIntegrationURL);
   });
 
-  it('should throw error when appKeyStorage.retrieve fails', async () => {
-    vi.mocked(appKeyStorage.retrieve).mockRejectedValue(
-      new Error('Retrieve failed'),
+  it('should throw error when Ed25519KeyIdentity.generate fails', async () => {
+    vi.mocked(Ed25519KeyIdentity.generate).mockRejectedValue(
+      new Error('Generate failed'),
     );
     vi.mocked(saveRedirectPath).mockResolvedValue(undefined);
 
@@ -96,14 +106,51 @@ describe('login', () => {
         redirectPathStorage,
         ...mockConfig,
       }),
-    ).rejects.toThrow('Retrieve failed');
+    ).rejects.toThrow('Generate failed');
 
     expect(saveRedirectPath).toHaveBeenCalledWith({
       currentPath: '/',
       loginOuterParams: { redirectPath: '/dashboard' },
       redirectPathStorage,
     });
-    expect(appKeyStorage.retrieve).toHaveBeenCalled();
+    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
+    expect(appKeyStorage.save).not.toHaveBeenCalled();
+    expect(buildIIIntegrationURL).not.toHaveBeenCalled();
+    expect(openBrowser).not.toHaveBeenCalled();
+  });
+
+  it('should throw error when appKeyStorage.save fails', async () => {
+    const mockAppKey = {
+      getPublicKey: () => ({
+        toDer: () => new Uint8Array([1, 2, 3]),
+      }),
+      toJSON: vi.fn(),
+      getKeyPair: vi.fn(),
+      sign: vi.fn(),
+      '#private': vi.fn(),
+    } as unknown as Ed25519KeyIdentity;
+
+    vi.mocked(Ed25519KeyIdentity.generate).mockResolvedValue(mockAppKey);
+    (appKeyStorage.save as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Save failed'),
+    );
+    vi.mocked(saveRedirectPath).mockResolvedValue(undefined);
+
+    await expect(
+      login({
+        appKeyStorage,
+        redirectPathStorage,
+        ...mockConfig,
+      }),
+    ).rejects.toThrow('Save failed');
+
+    expect(saveRedirectPath).toHaveBeenCalledWith({
+      currentPath: '/',
+      loginOuterParams: { redirectPath: '/dashboard' },
+      redirectPathStorage,
+    });
+    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
+    expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(buildIIIntegrationURL).not.toHaveBeenCalled();
     expect(openBrowser).not.toHaveBeenCalled();
   });
@@ -120,7 +167,7 @@ describe('login', () => {
     } as unknown as Ed25519KeyIdentity;
     const mockIIIntegrationURL = 'https://example.com';
 
-    vi.mocked(appKeyStorage.retrieve).mockResolvedValue(mockAppKey);
+    vi.mocked(Ed25519KeyIdentity.generate).mockResolvedValue(mockAppKey);
     vi.mocked(buildIIIntegrationURL).mockReturnValue(mockIIIntegrationURL);
     vi.mocked(openBrowser).mockRejectedValue(new Error('Browser failed'));
     vi.mocked(saveRedirectPath).mockResolvedValue(undefined);
@@ -138,7 +185,8 @@ describe('login', () => {
       loginOuterParams: { redirectPath: '/dashboard' },
       redirectPathStorage,
     });
-    expect(appKeyStorage.retrieve).toHaveBeenCalled();
+    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
+    expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(buildIIIntegrationURL).toHaveBeenCalledWith({
       pubkey: '010203',
       localIPAddress: '127.0.0.1',

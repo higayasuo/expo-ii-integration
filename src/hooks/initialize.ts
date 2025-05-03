@@ -1,6 +1,5 @@
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-import { Ed25519KeyIdentity } from '@dfinity/identity';
 
 /**
  * Parameters for the initialize function.
@@ -26,14 +25,6 @@ export const initialize = async ({
 }: InitializeParams): Promise<void> => {
   try {
     const appKey = await appKeyStorage.find();
-
-    if (!appKey) {
-      const key = await Ed25519KeyIdentity.generate();
-      await appKeyStorage.save(key);
-      console.log('Generated new app key');
-      return;
-    }
-
     const delegation = await delegationStorage.find();
 
     if (appKey && delegation) {

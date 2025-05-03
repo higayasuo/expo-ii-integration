@@ -23,8 +23,6 @@ export const handleURL = async ({
   onError,
 }: HandleURLParams): Promise<void> => {
   try {
-    console.log('Handling URL:', url);
-
     const delegation = parseDelegationFromURL(url);
     console.log('Delegation from URL:', delegation ? 'present' : 'not present');
 

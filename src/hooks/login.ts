@@ -5,6 +5,7 @@ import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { openBrowser } from './openBrowser';
 import { LoginOuterParams } from '../types';
 import { saveRedirectPath } from './saveRedirectPath';
+import { Ed25519KeyIdentity } from '@dfinity/identity';
 /**
  * Represents the parameters required for the login function.
  * @property {string} localIPAddress - The local IP address.
@@ -57,12 +58,13 @@ export const login = async ({
     console.log('Logging in');
 
     saveRedirectPath({
-      currentPath,
       loginOuterParams,
+      currentPath,
       redirectPathStorage,
     });
 
-    const appKey = await appKeyStorage.retrieve();
+    const appKey = await Ed25519KeyIdentity.generate();
+    await appKeyStorage.save(appKey);
     const pubkey = toHex(appKey.getPublicKey().toDer());
 
     const iiIntegrationURL = buildIIIntegrationURL({

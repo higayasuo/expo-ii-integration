@@ -66,7 +66,7 @@ export const useIIIntegration = ({
   const currentPath = usePathname();
 
   const appKeyStorage = new AppKeyStorage(secureStorage);
-  const delegationStorage = new DelegationStorage(secureStorage);
+  const delegationStorage = new DelegationStorage(regularStorage);
   const redirectPathStorage = new RedirectPathStorage(regularStorage);
 
   useEffect(() => {
