@@ -34,12 +34,13 @@ npm install expo-ii-integration
   "@dfinity/agent": "^0.20.2",
   "@dfinity/identity": "^0.20.2",
   "canister-manager": "^0.1.7",
-  "expo-icp-frontend-helpers": "^0.1.4",
-  "expo-linking": "~7.0",
-  "expo-router": "~4.0",
-  "expo-storage-universal": "^0.3.2",
+  "expo-icp-frontend-helpers": "^0.1.8",
+  "expo-linking": "~7.0.5",
+  "expo-router": "~4.0.20",
+  "expo-storage-universal": "^0.3.3",
   "expo-web-browser": "~14.0",
-  "react": "~18.3"
+  "react": "18.3.1",
+  "react-native": "0.76.9"
 }
 ```
 
@@ -83,10 +84,8 @@ function App() {
     deepLink,
     frontendCanisterId: CANISTER_ID_FRONTEND,
     iiIntegrationCanisterId: CANISTER_ID_II_INTEGRATION,
-    authPath: 'ii-integration', // Required: Path to distinguish authentication callbacks from other deep links
     secureStorage,
     regularStorage,
-    platform: Platform.OS,
   });
 
   return (
@@ -110,6 +109,7 @@ function AuthButton() {
     isAuthReady,
     getIdentity,
     authError,
+    clearAuthError,
   } = useIIIntegrationContext();
 
   if (!isAuthReady) return null;
@@ -128,7 +128,7 @@ function AuthButton() {
 The `login` function accepts an optional object with the following properties:
 
 ```typescript
-type LoginArgs = {
+type LoginOuterParams = {
   redirectPath?: string;
 };
 ```
@@ -163,19 +163,18 @@ type UseIIIntegrationParams = {
   deepLink: string; // Deep link to determine the type
   frontendCanisterId: string; // Frontend canister ID
   iiIntegrationCanisterId: string; // II Integration canister ID
-  authPath: string; // Required: Path to distinguish authentication callbacks from other deep links
   secureStorage: Storage; // Secure storage for sensitive data
   regularStorage: Storage; // Regular storage for non-sensitive data
-  platform: string; // Platform identifier (e.g., 'ios', 'android', 'web')
 };
 
-type UseIIIntegrationResult = {
+type IIIntegrationType = {
   isAuthReady: boolean; // Whether the authentication system is ready
   isAuthenticated: boolean; // Whether the user is authenticated
   getIdentity: () => Promise<Identity | undefined>; // Get the current identity
-  login: (args?: LoginArgs) => Promise<void>; // Login function
+  login: (loginOuterParams?: LoginOuterParams) => Promise<void>; // Login function
   logout: () => Promise<void>; // Logout function
   authError: unknown | undefined; // Any authentication error
+  clearAuthError: () => void; // Clear the authentication error
 };
 ```
 
