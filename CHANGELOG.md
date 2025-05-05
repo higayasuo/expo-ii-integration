@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2025-05-04
+
+### Changed
+
+- Updated peer dependencies to use wildcard versions for Expo packages:
+  - `expo-linking`: `*`
+  - `expo-router`: `*`
+  - `expo-web-browser`: `*`
+  - Kept exact versions for React and React Native:
+    - `react`: `18.3.1`
+    - `react-native`: `0.76.9`
+
+### Removed
+
+- Removed unused test files and utilities:
+  - Removed `src/test/setup.ts`
+  - Removed `src/test/mocks/expo-web-browser.ts`
+  - Removed `src/hooks/__tests__/dismissBrowser.spec.ts`
+  - Removed `src/hooks/__tests__/getRedirectPath.spec.ts`
+  - Removed `src/utils/normalizePath.ts` and its test file
+  - Cleaned up test directory structure
+
 ## [0.1.14] - 2025-05-03
 
 ### Changed
