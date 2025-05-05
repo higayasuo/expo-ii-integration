@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2025-05-04
+
+### Changed
+
+- Updated peer dependencies versions:
+  - `@dfinity/agent`: `^0.20.2`
+  - `@dfinity/identity`: `^0.20.2`
+  - `canister-manager`: `^0.1.7`
+  - `expo-icp-frontend-helpers`: `^0.1.8`
+  - `expo-linking`: `*`
+  - `expo-router`: `*`
+  - `expo-storage-universal`: `^0.3.3`
+  - `expo-web-browser`: `*`
+  - `react`: `*`
+  - `react-native`: `*`
+
 ## [0.1.15] - 2025-05-04
 
 ### Changed
