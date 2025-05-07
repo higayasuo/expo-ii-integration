@@ -24,6 +24,7 @@ export default defineConfig({
         '@dfinity/identity',
         'canister-manager',
         'expo-icp-frontend-helpers',
+        'expo-crypto-universal',
       ],
     },
   },

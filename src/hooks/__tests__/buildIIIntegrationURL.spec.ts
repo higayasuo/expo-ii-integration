@@ -10,6 +10,7 @@ describe('buildIIIntegrationURL', () => {
     deepLink: 'exp://192.168.1.210:8081',
     frontendCanisterId: 'test-frontend-canister-id',
     iiIntegrationCanisterId: 'test-ii-integration-canister-id',
+    sessionId: 'test-session-id',
   };
 
   it('should return a valid URL with correct base path', () => {
@@ -29,5 +30,6 @@ describe('buildIIIntegrationURL', () => {
     );
     expect(url.searchParams.get('pubkey')).toBe(mockArgs.pubkey);
     expect(url.searchParams.get('deep-link-type')).toBe('expo-go');
+    expect(url.searchParams.get('session-id')).toBe(mockArgs.sessionId);
   });
 });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleURL } from '../handleURL';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
+import { SessionIdStorage } from '../../storage/SessionIdStorage';
 import { parseDelegationFromURL } from '../parseDelegationFromURL';
 import { buildIdentityFromDelegation } from '../buildIdentityFromDelegation';
 import { DelegationIdentity } from '@dfinity/identity';
@@ -23,15 +24,21 @@ describe('handleURL', () => {
     retrieve: vi.fn().mockResolvedValue({}),
   } as unknown as Ed25519KeyIdentityValueStorageWrapper;
 
+  const sessionIdStorage = {
+    find: vi.fn().mockResolvedValue('test-session-id'),
+  } as unknown as SessionIdStorage;
+
   const onSuccess = vi.fn();
   const onError = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(sessionIdStorage.find).mockResolvedValue('test-session-id');
   });
 
   it('should handle URL successfully when delegation is present', async () => {
-    const url = 'exp://192.168.0.210/--/dashboard#delegation=test-delegation';
+    const url =
+      'exp://192.168.0.210/--/dashboard#delegation=test-delegation&session-id=test-session-id';
     const identity = {} as unknown as DelegationIdentity;
 
     vi.mocked(parseDelegationFromURL).mockReturnValue('test-delegation');
@@ -41,11 +48,16 @@ describe('handleURL', () => {
       url,
       delegationStorage,
       appKeyStorage,
+      sessionIdStorage,
       onSuccess,
       onError,
     });
 
-    expect(parseDelegationFromURL).toHaveBeenCalledWith(url);
+    expect(sessionIdStorage.find).toHaveBeenCalled();
+    expect(parseDelegationFromURL).toHaveBeenCalledWith({
+      url,
+      sessionId: 'test-session-id',
+    });
     expect(buildIdentityFromDelegation).toHaveBeenCalledWith({
       delegation: 'test-delegation',
       delegationStorage,
@@ -55,8 +67,31 @@ describe('handleURL', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
+  it('should not proceed when session ID is not found', async () => {
+    const url =
+      'exp://192.168.0.210/--/dashboard#delegation=test-delegation&session-id=test-session-id';
+
+    vi.mocked(sessionIdStorage.find).mockResolvedValue(undefined);
+
+    await handleURL({
+      url,
+      delegationStorage,
+      appKeyStorage,
+      sessionIdStorage,
+      onSuccess,
+      onError,
+    });
+
+    expect(sessionIdStorage.find).toHaveBeenCalled();
+    expect(parseDelegationFromURL).not.toHaveBeenCalled();
+    expect(buildIdentityFromDelegation).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+  });
+
   it('should not proceed when delegation is not present', async () => {
-    const url = 'exp://192.168.0.210/--/dashboard#other=value';
+    const url =
+      'exp://192.168.0.210/--/#other=value&session-id=test-session-id';
 
     vi.mocked(parseDelegationFromURL).mockReturnValue(undefined);
 
@@ -64,18 +99,24 @@ describe('handleURL', () => {
       url,
       delegationStorage,
       appKeyStorage,
+      sessionIdStorage,
       onSuccess,
       onError,
     });
 
-    expect(parseDelegationFromURL).toHaveBeenCalledWith(url);
+    expect(sessionIdStorage.find).toHaveBeenCalled();
+    expect(parseDelegationFromURL).toHaveBeenCalledWith({
+      url,
+      sessionId: 'test-session-id',
+    });
     expect(buildIdentityFromDelegation).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).not.toHaveBeenCalled();
   });
 
   it('should call onError when an error occurs', async () => {
-    const url = 'exp://192.168.0.210/--/dashboard#delegation=test-delegation';
+    const url =
+      'exp://192.168.0.210/--/dashboard#delegation=test-delegation&session-id=test-session-id';
     const error = new Error('Test error');
 
     vi.mocked(parseDelegationFromURL).mockImplementation(() => {
@@ -86,11 +127,16 @@ describe('handleURL', () => {
       url,
       delegationStorage,
       appKeyStorage,
+      sessionIdStorage,
       onSuccess,
       onError,
     });
 
-    expect(parseDelegationFromURL).toHaveBeenCalledWith(url);
+    expect(sessionIdStorage.find).toHaveBeenCalled();
+    expect(parseDelegationFromURL).toHaveBeenCalledWith({
+      url,
+      sessionId: 'test-session-id',
+    });
     expect(buildIdentityFromDelegation).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledWith(error);

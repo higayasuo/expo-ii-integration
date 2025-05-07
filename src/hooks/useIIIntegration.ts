@@ -14,28 +14,49 @@ import { LoginOuterParams } from '../types';
 import { logout } from './logout';
 import { IIIntegrationType } from '../types';
 import { dismissBrowser } from './dismissBrowser';
+import { CryptoModule } from 'expo-crypto-universal';
+import { SessionIdStorage } from '../storage/SessionIdStorage';
+
 /**
- * Represents the parameters required for the II integration.
- * @property {string} localIPAddress - The local IP address.
- * @property {string} dfxNetwork - The DFX network.
- * @property {string | undefined} easDeepLinkType - The EAS deep link type.
- * @property {string} deepLink - The deep link.
- * @property {string} frontendCanisterId - The frontend canister ID.
- * @property {string} iiIntegrationCanisterId - The II integration canister ID.
- * @property {string} authPath - The authentication path.
- * @property {Storage} secureStorage - The secure storage.
- * @property {Storage} regularStorage - The regular storage.
- * @property {string} platform - The platform.
+ * Parameters for the useIIIntegration hook.
  */
 type UseIIIntegrationParams = {
+  /**
+   * The local IP address.
+   */
   localIPAddress: string;
+  /**
+   * The DFX network.
+   */
   dfxNetwork: string;
+  /**
+   * The EAS deep link type.
+   */
   easDeepLinkType: string | undefined;
+  /**
+   * The deep link.
+   */
   deepLink: string;
+  /**
+   * The frontend canister ID.
+   */
   frontendCanisterId: string;
+  /**
+   * The II integration canister ID.
+   */
   iiIntegrationCanisterId: string;
+  /**
+   * The secure storage.
+   */
   secureStorage: Storage;
+  /**
+   * The regular storage.
+   */
   regularStorage: Storage;
+  /**
+   * The crypto module.
+   */
+  cryptoModule: CryptoModule;
 };
 
 /**
@@ -56,6 +77,7 @@ export const useIIIntegration = ({
   iiIntegrationCanisterId,
   secureStorage,
   regularStorage,
+  cryptoModule,
 }: UseIIIntegrationParams): IIIntegrationType => {
   const url = Linking.useURL();
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -68,6 +90,7 @@ export const useIIIntegration = ({
   const appKeyStorage = new AppKeyStorage(secureStorage);
   const delegationStorage = new DelegationStorage(regularStorage);
   const redirectPathStorage = new RedirectPathStorage(regularStorage);
+  const sessionIdStorage = new SessionIdStorage(regularStorage);
 
   useEffect(() => {
     if (isAuthReady) {
@@ -95,6 +118,7 @@ export const useIIIntegration = ({
       url,
       delegationStorage,
       appKeyStorage,
+      sessionIdStorage,
       onSuccess: async () => {
         setIsAuthenticated(true);
         const path = await redirectPathStorage.find();
@@ -102,12 +126,12 @@ export const useIIIntegration = ({
         if (path) {
           router.replace(path);
           // Small delay to ensure navigation starts
-          setTimeout(() => {
-            dismissBrowser();
-          }, 500);
-        } else {
-          dismissBrowser();
+          // setTimeout(() => {
+          //   dismissBrowser();
+          // }, 500);
         }
+
+        dismissBrowser();
       },
       onError: setAuthError,
     });
@@ -132,8 +156,10 @@ export const useIIIntegration = ({
         iiIntegrationCanisterId,
         appKeyStorage,
         redirectPathStorage,
+        sessionIdStorage,
         currentPath,
         loginOuterParams,
+        cryptoModule,
       }),
     logout: () =>
       logout({

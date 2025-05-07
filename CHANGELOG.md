@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] - 2025-05-07
+
+### Added
+
+- Added `SessionIdStorage` class for managing session IDs:
+  - Extends `StringValueStorageWrapper` for consistent storage interface
+  - Uses dedicated storage key for session ID management
+  - Improves security by isolating session ID storage
+- Added `cryptoModule` parameter to `useIIIntegration` hook:
+  - Required for secure session ID generation
+  - Added to peer dependencies as `expo-crypto-universal`
+  - Updated documentation to reflect new parameter
+
 ## [0.1.16] - 2025-05-05
 
 ### Changed

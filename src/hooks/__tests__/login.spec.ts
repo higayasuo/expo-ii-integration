@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { login } from '../login';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { RedirectPathStorage } from '../../storage/RedirectPathStorage';
+import { SessionIdStorage } from '../../storage/SessionIdStorage';
 import { buildIIIntegrationURL } from '../buildIIIntegrationURL';
 import { openBrowser } from '../openBrowser';
 import { saveRedirectPath } from '../saveRedirectPath';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
+import { CryptoModule } from 'expo-crypto-universal';
 
 vi.mock('../buildIIIntegrationURL', () => ({
   buildIIIntegrationURL: vi.fn(),
@@ -34,6 +36,14 @@ describe('login', () => {
     save: vi.fn().mockResolvedValue(undefined),
   } as unknown as RedirectPathStorage;
 
+  const sessionIdStorage = {
+    save: vi.fn().mockResolvedValue(undefined),
+  } as unknown as SessionIdStorage;
+
+  const cryptoModule = {
+    getRandomBytes: vi.fn().mockResolvedValue(new Uint8Array(32)),
+  } as unknown as CryptoModule;
+
   const mockConfig = {
     localIPAddress: '127.0.0.1',
     dfxNetwork: 'local',
@@ -43,6 +53,7 @@ describe('login', () => {
     iiIntegrationCanisterId: 'ii-integration',
     currentPath: '/',
     loginOuterParams: { redirectPath: '/dashboard' },
+    cryptoModule,
   };
 
   beforeEach(() => {
@@ -72,6 +83,7 @@ describe('login', () => {
     await login({
       appKeyStorage,
       redirectPathStorage,
+      sessionIdStorage,
       ...mockConfig,
     });
 
@@ -82,6 +94,7 @@ describe('login', () => {
     });
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
+    expect(sessionIdStorage.save).toHaveBeenCalledWith(expect.any(String));
     expect(buildIIIntegrationURL).toHaveBeenCalledWith({
       pubkey: '010203',
       localIPAddress: '127.0.0.1',
@@ -90,6 +103,7 @@ describe('login', () => {
       deepLink: 'app://',
       frontendCanisterId: 'frontend',
       iiIntegrationCanisterId: 'ii-integration',
+      sessionId: expect.any(String),
     });
     expect(openBrowser).toHaveBeenCalledWith(mockIIIntegrationURL);
   });
@@ -104,6 +118,7 @@ describe('login', () => {
       login({
         appKeyStorage,
         redirectPathStorage,
+        sessionIdStorage,
         ...mockConfig,
       }),
     ).rejects.toThrow('Generate failed');
@@ -115,6 +130,7 @@ describe('login', () => {
     });
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).not.toHaveBeenCalled();
+    expect(sessionIdStorage.save).not.toHaveBeenCalled();
     expect(buildIIIntegrationURL).not.toHaveBeenCalled();
     expect(openBrowser).not.toHaveBeenCalled();
   });
@@ -140,6 +156,7 @@ describe('login', () => {
       login({
         appKeyStorage,
         redirectPathStorage,
+        sessionIdStorage,
         ...mockConfig,
       }),
     ).rejects.toThrow('Save failed');
@@ -151,6 +168,7 @@ describe('login', () => {
     });
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
+    expect(sessionIdStorage.save).not.toHaveBeenCalled();
     expect(buildIIIntegrationURL).not.toHaveBeenCalled();
     expect(openBrowser).not.toHaveBeenCalled();
   });
@@ -176,6 +194,7 @@ describe('login', () => {
       login({
         appKeyStorage,
         redirectPathStorage,
+        sessionIdStorage,
         ...mockConfig,
       }),
     ).rejects.toThrow('Browser failed');
@@ -187,6 +206,7 @@ describe('login', () => {
     });
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
+    expect(sessionIdStorage.save).toHaveBeenCalledWith(expect.any(String));
     expect(buildIIIntegrationURL).toHaveBeenCalledWith({
       pubkey: '010203',
       localIPAddress: '127.0.0.1',
@@ -195,6 +215,7 @@ describe('login', () => {
       deepLink: 'app://',
       frontendCanisterId: 'frontend',
       iiIntegrationCanisterId: 'ii-integration',
+      sessionId: expect.any(String),
     });
     expect(openBrowser).toHaveBeenCalledWith(mockIIIntegrationURL);
   });

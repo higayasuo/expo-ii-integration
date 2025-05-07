@@ -39,6 +39,7 @@ npm install expo-ii-integration
   "expo-router",
   "expo-storage-universal",
   "expo-web-browser",
+  "expo-crypto-universal",
   "react",
   "react-native"
 }
@@ -86,6 +87,7 @@ function App() {
     iiIntegrationCanisterId: CANISTER_ID_II_INTEGRATION,
     secureStorage,
     regularStorage,
+    cryptoModule: new CryptoModule(),
   });
 
   return (
@@ -165,6 +167,7 @@ type UseIIIntegrationParams = {
   iiIntegrationCanisterId: string; // II Integration canister ID
   secureStorage: Storage; // Secure storage for sensitive data
   regularStorage: Storage; // Regular storage for non-sensitive data
+  cryptoModule: CryptoModule; // Crypto module for session ID generation
 };
 
 type IIIntegrationType = {
@@ -200,6 +203,14 @@ class DelegationStorage extends DelegationChainValueStorageWrapper {
 
 ```typescript
 class RedirectPathStorage extends StringValueStorageWrapper {
+  constructor(storage: Storage);
+}
+```
+
+#### SessionIdStorage
+
+```typescript
+class SessionIdStorage extends StringValueStorageWrapper {
   constructor(storage: Storage);
 }
 ```

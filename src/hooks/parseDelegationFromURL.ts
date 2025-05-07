@@ -3,9 +3,21 @@ import { parseURL } from 'expo-icp-frontend-helpers';
 /**
  * Represents the hash parameters extracted from a URL.
  * @property {string | undefined} delegation - The delegation parameter from the URL's hash.
+ * @property {string | undefined} 'session-id' - The session ID parameter from the URL's hash.
  */
 type HashParams = {
   delegation?: string;
+  'session-id'?: string;
+};
+
+/**
+ * Represents the parameters required for parsing delegation from a URL.
+ * @property {string} url - The URL from which to parse the delegation.
+ * @property {string} sessionId - The session ID to match against the URL's hash parameters.
+ */
+type ParseDelegationFromURLParams = {
+  url: string;
+  sessionId: string;
 };
 
 /**
@@ -17,8 +29,15 @@ type HashParams = {
  * @param {ParseDelegationFromURLParams} params - The parameters required for parsing delegation from a URL.
  * @returns {string | undefined} The delegation parameter from the URL's hash, or undefined if not found.
  */
-export const parseDelegationFromURL = (url: string): string | undefined => {
+export const parseDelegationFromURL = ({
+  url,
+  sessionId,
+}: ParseDelegationFromURLParams): string | undefined => {
   const { hashParams } = parseURL<never, HashParams>(url);
 
-  return hashParams.delegation;
+  if (hashParams['session-id'] === sessionId) {
+    return hashParams.delegation;
+  }
+
+  return undefined;
 };

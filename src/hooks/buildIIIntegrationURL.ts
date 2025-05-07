@@ -10,6 +10,7 @@ import { getDeepLinkType } from 'expo-icp-frontend-helpers';
  * @property {string} deepLink - The deep link to be used for determining the deep link type.
  * @property {string} frontendCanisterId - The frontend canister ID to be used for determining the deep link type.
  * @property {string} iiIntegrationCanisterId - The II Integration canister ID to be used for building the URL.
+ * @property {string} sessionId - The session ID to be used for the URL.
  */
 type BuildIIIntegrationURLArgs = {
   pubkey: string;
@@ -19,6 +20,7 @@ type BuildIIIntegrationURLArgs = {
   deepLink: string;
   frontendCanisterId: string;
   iiIntegrationCanisterId: string;
+  sessionId: string;
 };
 
 /**
@@ -40,6 +42,7 @@ export const buildIIIntegrationURL = ({
   deepLink,
   frontendCanisterId,
   iiIntegrationCanisterId,
+  sessionId,
 }: BuildIIIntegrationURLArgs): string => {
   const canisterManager = new CanisterManager({
     dfxNetwork,
@@ -58,6 +61,7 @@ export const buildIIIntegrationURL = ({
 
   url.searchParams.set('pubkey', pubkey);
   url.searchParams.set('deep-link-type', deepLinkType);
+  url.searchParams.set('session-id', sessionId);
 
   return url.toString();
 };
