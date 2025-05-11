@@ -1,5 +1,5 @@
 import { CanisterManager } from 'canister-manager';
-import { getDeepLinkType } from 'expo-icp-frontend-helpers';
+import { getDeepLinkType, updateParams } from 'expo-icp-frontend-helpers';
 
 /**
  * Represents the arguments required to build an II Integration URL.
@@ -51,17 +51,19 @@ export const buildIIIntegrationURL = ({
   const iiIntegrationURL = canisterManager.getFrontendCanisterURL(
     iiIntegrationCanisterId,
   );
-  const url = new URL(iiIntegrationURL);
-
   const deepLinkType = getDeepLinkType({
     easDeepLinkType,
     deepLink,
     frontendCanisterId,
   });
 
-  url.searchParams.set('pubkey', pubkey);
-  url.searchParams.set('deep-link-type', deepLinkType);
-  url.searchParams.set('session-id', sessionId);
+  const url = new URL(iiIntegrationURL);
+
+  updateParams(url.searchParams, {
+    pubkey,
+    deepLinkType,
+    sessionId,
+  });
 
   return url.toString();
 };

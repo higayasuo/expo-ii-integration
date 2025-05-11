@@ -2,20 +2,21 @@ import { useState, useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { router, usePathname } from 'expo-router';
 
-import { initialize } from './initialize';
-import { handleURL } from './handleURL';
+import { initialize } from './helpers/initialize';
+import { handleURL } from './helpers/handleURL';
 import { Storage } from 'expo-storage-universal';
-import { AppKeyStorage } from '../storage/AppKeyStorage';
-import { DelegationStorage } from '../storage/DelegationStorage';
-import { RedirectPathStorage } from '../storage/RedirectPathStorage';
-import { getIdentity } from './getIdentity';
-import { login } from './login';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
+import { StringValueStorageWrapper } from 'expo-storage-universal';
+import { getIdentity } from './helpers/getIdentity';
+import { login } from './helpers/login';
 import { LoginOuterParams } from '../types';
-import { logout } from './logout';
+import { logout } from './helpers/logout';
 import { IIIntegrationType } from '../types';
-import { dismissBrowser } from './dismissBrowser';
+import { dismissBrowser } from './helpers/dismissBrowser';
 import { CryptoModule } from 'expo-crypto-universal';
-import { SessionIdStorage } from '../storage/SessionIdStorage';
+
+const NAMESPACE = 'expo-ii-integration';
 
 /**
  * Parameters for the useIIIntegration hook.
@@ -87,10 +88,22 @@ export const useIIIntegration = ({
   // Login path management
   const currentPath = usePathname();
 
-  const appKeyStorage = new AppKeyStorage(secureStorage);
-  const delegationStorage = new DelegationStorage(regularStorage);
-  const redirectPathStorage = new RedirectPathStorage(regularStorage);
-  const sessionIdStorage = new SessionIdStorage(regularStorage);
+  const appKeyStorage = new Ed25519KeyIdentityValueStorageWrapper(
+    secureStorage,
+    `${NAMESPACE}/appKey`,
+  );
+  const delegationStorage = new DelegationChainValueStorageWrapper(
+    regularStorage,
+    `${NAMESPACE}/delegation`,
+  );
+  const redirectPathStorage = new StringValueStorageWrapper(
+    regularStorage,
+    `${NAMESPACE}/redirectPath`,
+  );
+  const sessionIdStorage = new StringValueStorageWrapper(
+    regularStorage,
+    `${NAMESPACE}/sessionId`,
+  );
 
   useEffect(() => {
     if (isAuthReady) {

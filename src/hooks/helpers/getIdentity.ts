@@ -1,6 +1,6 @@
 import { AnonymousIdentity, Identity } from '@dfinity/agent';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
 import { buildIdentityFromStorage } from './buildIdentityFromStorage';
 
 /**

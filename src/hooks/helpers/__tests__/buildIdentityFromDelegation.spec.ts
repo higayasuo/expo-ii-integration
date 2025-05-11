@@ -5,8 +5,8 @@ import {
   Ed25519KeyIdentity,
 } from '@dfinity/identity';
 import { buildIdentityFromDelegation } from '../buildIdentityFromDelegation';
-import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { buildIdentity } from 'expo-icp-frontend-helpers';
 
 // Mock the buildIdentity function

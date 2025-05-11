@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { logout } from '../logout';
-import { DelegationStorage } from '../../storage/DelegationStorage';
+import { DelegationChainValueStorageWrapper } from '../../../storage/DelegationChainValueStorageWrapper';
 
 describe('logout', () => {
   it('should remove delegation from storage and call onFinally', async () => {
     const delegationStorage = {
       remove: vi.fn().mockResolvedValue(undefined),
-    } as unknown as DelegationStorage;
+    } as unknown as DelegationChainValueStorageWrapper;
     const onFinally = vi.fn();
 
     await logout({ delegationStorage, onFinally });
@@ -19,7 +19,7 @@ describe('logout', () => {
     const error = new Error('Delegation removal failed');
     const delegationStorage = {
       remove: vi.fn().mockRejectedValue(error),
-    } as unknown as DelegationStorage;
+    } as unknown as DelegationChainValueStorageWrapper;
     const onFinally = vi.fn();
 
     await expect(logout({ delegationStorage, onFinally })).rejects.toThrow(

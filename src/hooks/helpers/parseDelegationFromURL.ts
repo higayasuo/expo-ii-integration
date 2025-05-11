@@ -1,4 +1,4 @@
-import { parseURL } from 'expo-icp-frontend-helpers';
+import { parseParams } from 'expo-icp-frontend-helpers';
 
 /**
  * Represents the hash parameters extracted from a URL.
@@ -7,7 +7,7 @@ import { parseURL } from 'expo-icp-frontend-helpers';
  */
 type HashParams = {
   delegation?: string;
-  'session-id'?: string;
+  sessionId?: string;
 };
 
 /**
@@ -33,9 +33,9 @@ export const parseDelegationFromURL = ({
   url,
   sessionId,
 }: ParseDelegationFromURLParams): string | undefined => {
-  const { hashParams } = parseURL<never, HashParams>(url);
+  const hashParams = parseParams<HashParams>(new URL(url).hash);
 
-  if (hashParams['session-id'] === sessionId) {
+  if (hashParams.sessionId === sessionId) {
     return hashParams.delegation;
   }
 

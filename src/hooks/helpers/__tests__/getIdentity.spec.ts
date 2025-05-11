@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AnonymousIdentity } from '@dfinity/agent';
 import { DelegationIdentity } from '@dfinity/identity';
 import { getIdentity } from '../getIdentity';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../../storage/DelegationChainValueStorageWrapper';
 import { buildIdentityFromStorage } from '../buildIdentityFromStorage';
 
 vi.mock('../buildIdentityFromStorage', () => ({

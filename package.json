@@ -1,6 +1,6 @@
 {
   "name": "expo-ii-integration",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "Expo library to enable smartphone native applications to invoke Internet Identity through a web application",
   "type": "module",
   "files": [
@@ -58,10 +58,10 @@
     "@dfinity/identity": "^0.20.2",
     "canister-manager": "^0.1.7",
     "expo-crypto-universal": "^0.2.7",
-    "expo-icp-frontend-helpers": "^0.1.8",
+    "expo-icp-frontend-helpers": "^0.1.12",
     "expo-linking": "*",
     "expo-router": "*",
-    "expo-storage-universal": "^0.3.3",
+    "expo-storage-universal": "^0.3.4",
     "expo-web-browser": "*",
     "react": "*",
     "react-native": "*"

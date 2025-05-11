@@ -1,8 +1,8 @@
 import { parseDelegationFromURL } from './parseDelegationFromURL';
 import { buildIdentityFromDelegation } from './buildIdentityFromDelegation';
-import { SessionIdStorage } from '../storage/SessionIdStorage';
-import { AppKeyStorage } from '../storage/AppKeyStorage';
-import { DelegationStorage } from '../storage/DelegationStorage';
+import { StringValueStorageWrapper } from 'expo-storage-universal';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
 /**
  * Represents the parameters required for handling a URL.
  *
@@ -15,9 +15,9 @@ import { DelegationStorage } from '../storage/DelegationStorage';
  */
 type HandleURLParams = {
   url: string;
-  delegationStorage: DelegationStorage;
-  appKeyStorage: AppKeyStorage;
-  sessionIdStorage: SessionIdStorage;
+  delegationStorage: DelegationChainValueStorageWrapper;
+  appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
+  sessionIdStorage: StringValueStorageWrapper;
   onSuccess: () => void;
   onError: (error: unknown) => void;
 };

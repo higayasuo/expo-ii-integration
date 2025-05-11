@@ -1,5 +1,5 @@
-import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
 
 /**
  * Parameters for the initialize function.

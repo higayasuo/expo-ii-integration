@@ -1,13 +1,12 @@
 import { toHex } from '@dfinity/agent';
-import { RedirectPathStorage } from '../storage/RedirectPathStorage';
+import { StringValueStorageWrapper } from 'expo-storage-universal';
 import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { openBrowser } from './openBrowser';
-import { LoginOuterParams } from '../types';
 import { saveRedirectPath } from './saveRedirectPath';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { CryptoModule } from 'expo-crypto-universal';
-import { SessionIdStorage } from '../storage/SessionIdStorage';
-import { AppKeyStorage } from '../storage/AppKeyStorage';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { LoginOuterParams } from '../../types';
 /**
  * Represents the parameters required for the login function.
  * @property {string} localIPAddress - The local IP address.
@@ -31,9 +30,9 @@ type LoginParams = {
   deepLink: string;
   frontendCanisterId: string;
   iiIntegrationCanisterId: string;
-  appKeyStorage: AppKeyStorage;
-  redirectPathStorage: RedirectPathStorage;
-  sessionIdStorage: SessionIdStorage;
+  appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
+  redirectPathStorage: StringValueStorageWrapper;
+  sessionIdStorage: StringValueStorageWrapper;
   currentPath: string;
   loginOuterParams: LoginOuterParams;
   cryptoModule: CryptoModule;

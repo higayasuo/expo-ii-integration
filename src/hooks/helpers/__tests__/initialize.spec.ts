@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { initialize } from '../initialize';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../../storage/DelegationChainValueStorageWrapper';
 import { Storage } from 'expo-storage-universal';
 import { Ed25519KeyIdentity, DelegationChain } from '@dfinity/identity';
 

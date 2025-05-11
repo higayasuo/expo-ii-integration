@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { DelegationIdentity, Ed25519KeyIdentity } from '@dfinity/identity';
 import { buildIdentityFromStorage } from '../buildIdentityFromStorage';
-import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import {
   buildIdentity,
   isAuthenticationExpiredError,

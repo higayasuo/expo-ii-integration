@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { login } from '../login';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { RedirectPathStorage } from '../../storage/RedirectPathStorage';
-import { SessionIdStorage } from '../../storage/SessionIdStorage';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { StringValueStorageWrapper } from 'expo-storage-universal';
 import { buildIIIntegrationURL } from '../buildIIIntegrationURL';
 import { openBrowser } from '../openBrowser';
 import { saveRedirectPath } from '../saveRedirectPath';
@@ -34,11 +33,11 @@ describe('login', () => {
 
   const redirectPathStorage = {
     save: vi.fn().mockResolvedValue(undefined),
-  } as unknown as RedirectPathStorage;
+  } as unknown as StringValueStorageWrapper;
 
   const sessionIdStorage = {
     save: vi.fn().mockResolvedValue(undefined),
-  } as unknown as SessionIdStorage;
+  } as unknown as StringValueStorageWrapper;
 
   const cryptoModule = {
     getRandomBytes: vi.fn().mockResolvedValue(new Uint8Array(32)),

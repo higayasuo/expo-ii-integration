@@ -56,11 +56,6 @@ import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import { IIIntegrationProvider, useIIIntegration } from 'expo-ii-integration';
 import {
-  AppKeyStorage,
-  DelegationStorage,
-  RedirectPathStorage,
-} from 'expo-ii-integration/storage';
-import {
   LOCAL_IP_ADDRESS,
   DFX_NETWORK,
   CANISTER_ID_II_INTEGRATION,
@@ -179,40 +174,6 @@ type IIIntegrationType = {
   authError: unknown | undefined; // Any authentication error
   clearAuthError: () => void; // Clear the authentication error
 };
-```
-
-### Storage Classes
-
-#### AppKeyStorage
-
-```typescript
-class AppKeyStorage extends Ed25519KeyIdentityValueStorageWrapper {
-  constructor(storage: Storage);
-}
-```
-
-#### DelegationStorage
-
-```typescript
-class DelegationStorage extends DelegationChainValueStorageWrapper {
-  constructor(storage: Storage);
-}
-```
-
-#### RedirectPathStorage
-
-```typescript
-class RedirectPathStorage extends StringValueStorageWrapper {
-  constructor(storage: Storage);
-}
-```
-
-#### SessionIdStorage
-
-```typescript
-class SessionIdStorage extends StringValueStorageWrapper {
-  constructor(storage: Storage);
-}
 ```
 
 ## Contributing

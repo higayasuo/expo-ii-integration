@@ -1,12 +1,12 @@
-import { DelegationStorage } from '../storage/DelegationStorage';
+import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
 
 /**
  * Parameters for the logout function.
- * @property {DelegationStorage} delegationStorage - The delegation storage instance.
+ * @property {DelegationChainValueStorageWrapper} delegationStorage - The delegation storage instance.
  * @property {() => void} onFinally - Callback function to be called after logout attempt, regardless of success or failure.
  */
 type LogoutParams = {
-  delegationStorage: DelegationStorage;
+  delegationStorage: DelegationChainValueStorageWrapper;
   onFinally: () => void;
 };
 

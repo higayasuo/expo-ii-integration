@@ -1,7 +1,7 @@
 import { DelegationChain, DelegationIdentity } from '@dfinity/identity';
 
-import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { buildIdentity } from 'expo-icp-frontend-helpers';
 
 /**

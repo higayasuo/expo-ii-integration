@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { handleURL } from '../handleURL';
-import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DelegationChainValueStorageWrapper } from '../../storage/DelegationChainValueStorageWrapper';
-import { SessionIdStorage } from '../../storage/SessionIdStorage';
+import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
+import { DelegationChainValueStorageWrapper } from '../../../storage/DelegationChainValueStorageWrapper';
+import { StringValueStorageWrapper } from 'expo-storage-universal';
 import { parseDelegationFromURL } from '../parseDelegationFromURL';
 import { buildIdentityFromDelegation } from '../buildIdentityFromDelegation';
 import { DelegationIdentity } from '@dfinity/identity';
@@ -26,7 +26,7 @@ describe('handleURL', () => {
 
   const sessionIdStorage = {
     find: vi.fn().mockResolvedValue('test-session-id'),
-  } as unknown as SessionIdStorage;
+  } as unknown as StringValueStorageWrapper;
 
   const onSuccess = vi.fn();
   const onError = vi.fn();
