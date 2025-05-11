@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.19] - 2025-05-09
+
+### Changed
+
+- Changed storage key separator from `/` to `.` in `useIIIntegration` hook:
+  - Updated key format for better compatibility with storage systems
+  - Affects keys for app key, delegation, redirect path, and session ID storage
+  - Example: `expo-ii-integration.appKey` instead of `expo-ii-integration/appKey`
+
 ## [0.1.18] - 2025-05-08
 
 ### Removed

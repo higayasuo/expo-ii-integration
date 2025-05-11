@@ -90,19 +90,19 @@ export const useIIIntegration = ({
 
   const appKeyStorage = new Ed25519KeyIdentityValueStorageWrapper(
     secureStorage,
-    `${NAMESPACE}/appKey`,
+    `${NAMESPACE}.appKey`,
   );
   const delegationStorage = new DelegationChainValueStorageWrapper(
     regularStorage,
-    `${NAMESPACE}/delegation`,
+    `${NAMESPACE}.delegation`,
   );
   const redirectPathStorage = new StringValueStorageWrapper(
     regularStorage,
-    `${NAMESPACE}/redirectPath`,
+    `${NAMESPACE}.redirectPath`,
   );
   const sessionIdStorage = new StringValueStorageWrapper(
     regularStorage,
-    `${NAMESPACE}/sessionId`,
+    `${NAMESPACE}.sessionId`,
   );
 
   useEffect(() => {
