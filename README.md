@@ -56,7 +56,7 @@ import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import { IIIntegrationProvider, useIIIntegration } from 'expo-ii-integration';
 import { buildAppConnectionURL } from 'expo-icp-app-connect-helpers';
-import { buildDeepLinkType } from 'expo-icp-frontend-helpers';
+import { getDeepLinkType } from 'expo-icp-frontend-helpers';
 import {
   LOCAL_IP_ADDRESS,
   DFX_NETWORK,
@@ -81,7 +81,7 @@ function App() {
     localIPAddress: LOCAL_IP_ADDRESS,
     targetCanisterId: CANISTER_ID_II_INTEGRATION,
   });
-  const deepLinkType = buildDeepLinkType({
+  const deepLinkType = getDeepLinkType({
     deepLink,
     frontendCanisterId: CANISTER_ID_FRONTEND,
     easDeepLinkType: process.env.EXPO_PUBLIC_EAS_DEEP_LINK_TYPE,
