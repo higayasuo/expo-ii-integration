@@ -1,40 +1,18 @@
 import { toHex } from '@dfinity/agent';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
-import { buildIIIntegrationURL } from './buildIIIntegrationURL';
 import { openBrowser } from './openBrowser';
-import { saveRedirectPath } from './saveRedirectPath';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { CryptoModule } from 'expo-crypto-universal';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { LoginOuterParams } from '../../types';
-/**
- * Represents the parameters required for the login function.
- * @property {string} localIPAddress - The local IP address.
- * @property {string} dfxNetwork - The DFX network.
- * @property {string | undefined} easDeepLinkType - The EAS deep link type.
- * @property {string} deepLink - The deep link.
- * @property {string} frontendCanisterId - The frontend canister ID.
- * @property {string} iiIntegrationCanisterId - The II integration canister ID.
- * @property {string} authPath - The authentication path.
- * @property {AppKeyStorage} appKeyStorage - The storage wrapper for app key.
- * @property {RedirectPathStorage} redirectPathStorage - The storage wrapper for redirect path.
- * @property {SessionIdStorage} sessionIdStorage - The storage wrapper for session ID.
- * @property {string} currentPath - The current path.
- * @property {LoginOuterParams} loginOuterParams - The outer parameters for the login function.
- * @property {CryptoModule} cryptoModule - The crypto module.
- */
+import { DeepLinkType, updateParams } from 'expo-icp-frontend-helpers';
+
 type LoginParams = {
-  localIPAddress: string;
-  dfxNetwork: string;
-  easDeepLinkType: string | undefined;
-  deepLink: string;
-  frontendCanisterId: string;
-  iiIntegrationCanisterId: string;
+  iiIntegrationUrl: string;
+  deepLinkType: DeepLinkType;
+  redirectPath: string | undefined;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   redirectPathStorage: StringValueStorageWrapper;
   sessionIdStorage: StringValueStorageWrapper;
-  currentPath: string;
-  loginOuterParams: LoginOuterParams;
   cryptoModule: CryptoModule;
 };
 
@@ -48,27 +26,22 @@ type LoginParams = {
  * @returns {Promise<void>} A promise that resolves when the login process is complete.
  */
 export const login = async ({
-  localIPAddress,
-  dfxNetwork,
-  easDeepLinkType,
-  deepLink,
-  frontendCanisterId,
-  iiIntegrationCanisterId,
+  iiIntegrationUrl,
+  deepLinkType,
+  redirectPath,
   appKeyStorage,
   redirectPathStorage,
   sessionIdStorage,
-  currentPath,
-  loginOuterParams,
   cryptoModule,
 }: LoginParams): Promise<void> => {
   try {
     console.log('Logging in');
 
-    saveRedirectPath({
-      loginOuterParams,
-      currentPath,
-      redirectPathStorage,
-    });
+    if (redirectPath) {
+      await redirectPathStorage.save(redirectPath);
+    } else {
+      await redirectPathStorage.remove();
+    }
 
     const appKey = await Ed25519KeyIdentity.generate();
     await appKeyStorage.save(appKey);
@@ -76,18 +49,14 @@ export const login = async ({
     const sessionId = toHex((await cryptoModule.getRandomBytes(32)).buffer);
     await sessionIdStorage.save(sessionId);
 
-    const iiIntegrationURL = buildIIIntegrationURL({
+    const url = new URL(iiIntegrationUrl);
+    updateParams(url.searchParams, {
       pubkey,
-      localIPAddress,
-      dfxNetwork,
-      easDeepLinkType,
-      deepLink,
-      frontendCanisterId,
-      iiIntegrationCanisterId,
+      deepLinkType,
       sessionId,
     });
 
-    await openBrowser(iiIntegrationURL);
+    await openBrowser(url.toString());
   } catch (error) {
     console.error('Login failed:', error);
     throw error;

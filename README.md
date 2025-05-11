@@ -55,12 +55,15 @@ npm install expo-ii-integration
 import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 import { IIIntegrationProvider, useIIIntegration } from 'expo-ii-integration';
+import { buildAppConnectionURL } from 'expo-icp-app-connect-helpers';
+import { buildDeepLinkType } from 'expo-icp-frontend-helpers';
 import {
   LOCAL_IP_ADDRESS,
   DFX_NETWORK,
   CANISTER_ID_II_INTEGRATION,
   CANISTER_ID_FRONTEND,
 } from '@/constants';
+import { cryptoModule } from '@/crypto';
 
 function App() {
   const isWeb = Platform.OS === 'web';
@@ -73,16 +76,22 @@ function App() {
     : new NativeRegularStorage();
 
   const deepLink = Linking.createURL('/');
-  const iiIntegration = useIIIntegration({
-    localIPAddress: LOCAL_IP_ADDRESS,
+  const iiIntegrationUrl = buildAppConnectionURL({
     dfxNetwork: DFX_NETWORK,
-    easDeepLinkType: process.env.EXPO_PUBLIC_EAS_DEEP_LINK_TYPE,
+    localIPAddress: LOCAL_IP_ADDRESS,
+    targetCanisterId: CANISTER_ID_II_INTEGRATION,
+  });
+  const deepLinkType = buildDeepLinkType({
     deepLink,
     frontendCanisterId: CANISTER_ID_FRONTEND,
-    iiIntegrationCanisterId: CANISTER_ID_II_INTEGRATION,
+    easDeepLinkType: process.env.EXPO_PUBLIC_EAS_DEEP_LINK_TYPE,
+  });
+  const iiIntegration = useIIIntegration({
+    iiIntegrationUrl,
+    deepLinkType,
     secureStorage,
     regularStorage,
-    cryptoModule: new CryptoModule(),
+    cryptoModule,
   });
 
   return (
@@ -120,46 +129,14 @@ function AuthButton() {
 }
 ```
 
-### Login Function Arguments
-
-The `login` function accepts an optional object with the following properties:
-
-```typescript
-type LoginOuterParams = {
-  redirectPath?: string;
-};
-```
-
-- `redirectPath`: The path to redirect to after successful login
-  - If `redirectPath` is explicitly set to `undefined`, no redirection will occur
-  - If `redirectPath` is not provided, the current path will be used
-  - If `redirectPath` is provided with a path string, that path will be used
-
-Example usage:
-
-```tsx
-// Redirect to a specific path after login
-login({ redirectPath: '/dashboard' });
-
-// No redirection after login
-login({ redirectPath: undefined });
-
-// Use current path for redirection
-login();
-```
-
 ## API Reference
 
 ### useIIIntegration Hook
 
 ```typescript
 type UseIIIntegrationParams = {
-  localIPAddress: string; // Local IP address for development
-  dfxNetwork: string; // dfx network (e.g., 'local', 'ic')
-  easDeepLinkType?: string; // EAS deep link type ('legacy' or 'modern')
-  deepLink: string; // Deep link to determine the type
-  frontendCanisterId: string; // Frontend canister ID
-  iiIntegrationCanisterId: string; // II Integration canister ID
+  iiIntegrationUrl: string; // The II integration URL
+  deepLinkType: DeepLinkType; // The deep link type ('modern', 'icp', 'dev-server', 'expo-go', 'legacy')
   secureStorage: Storage; // Secure storage for sensitive data
   regularStorage: Storage; // Regular storage for non-sensitive data
   cryptoModule: CryptoModule; // Crypto module for session ID generation

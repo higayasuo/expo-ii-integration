@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Linking from 'expo-linking';
-import { router, usePathname } from 'expo-router';
+import { router } from 'expo-router';
 
 import { initialize } from './helpers/initialize';
 import { handleURL } from './helpers/handleURL';
@@ -15,6 +15,7 @@ import { logout } from './helpers/logout';
 import { IIIntegrationType } from '../types';
 import { dismissBrowser } from './helpers/dismissBrowser';
 import { CryptoModule } from 'expo-crypto-universal';
+import { DeepLinkType } from 'expo-icp-frontend-helpers';
 
 const NAMESPACE = 'expo-ii-integration';
 
@@ -23,29 +24,13 @@ const NAMESPACE = 'expo-ii-integration';
  */
 type UseIIIntegrationParams = {
   /**
-   * The local IP address.
+   * The II integration URL.
    */
-  localIPAddress: string;
+  iiIntegrationUrl: string;
   /**
-   * The DFX network.
+   * The deep link type.
    */
-  dfxNetwork: string;
-  /**
-   * The EAS deep link type.
-   */
-  easDeepLinkType: string | undefined;
-  /**
-   * The deep link.
-   */
-  deepLink: string;
-  /**
-   * The frontend canister ID.
-   */
-  frontendCanisterId: string;
-  /**
-   * The II integration canister ID.
-   */
-  iiIntegrationCanisterId: string;
+  deepLinkType: DeepLinkType;
   /**
    * The secure storage.
    */
@@ -70,12 +55,8 @@ type UseIIIntegrationParams = {
  * @returns {IIIntegrationType} An object containing the current identity, authentication status, login function, logout function, and any authentication error.
  */
 export const useIIIntegration = ({
-  localIPAddress,
-  dfxNetwork,
-  easDeepLinkType,
-  deepLink,
-  frontendCanisterId,
-  iiIntegrationCanisterId,
+  iiIntegrationUrl,
+  deepLinkType,
   secureStorage,
   regularStorage,
   cryptoModule,
@@ -84,9 +65,6 @@ export const useIIIntegration = ({
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<unknown | undefined>(undefined);
-
-  // Login path management
-  const currentPath = usePathname();
 
   const appKeyStorage = new Ed25519KeyIdentityValueStorageWrapper(
     secureStorage,
@@ -138,10 +116,6 @@ export const useIIIntegration = ({
 
         if (path) {
           router.replace(path);
-          // Small delay to ensure navigation starts
-          // setTimeout(() => {
-          //   dismissBrowser();
-          // }, 500);
         }
 
         dismissBrowser();
@@ -161,17 +135,12 @@ export const useIIIntegration = ({
       }),
     login: (loginOuterParams: LoginOuterParams = {}) =>
       login({
-        localIPAddress,
-        dfxNetwork,
-        easDeepLinkType,
-        deepLink,
-        frontendCanisterId,
-        iiIntegrationCanisterId,
+        iiIntegrationUrl,
+        deepLinkType,
         appKeyStorage,
+        redirectPath: loginOuterParams.redirectPath,
         redirectPathStorage,
         sessionIdStorage,
-        currentPath,
-        loginOuterParams,
         cryptoModule,
       }),
     logout: () =>

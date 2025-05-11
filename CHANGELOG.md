@@ -5,7 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.19] - 2025-05-09
+## [0.1.20] - 2025-05-12
+
+### Changed
+
+- Simplified `useIIIntegration` hook parameters:
+  - Removed direct configuration parameters:
+    - Removed `localIPAddress`
+    - Removed `dfxNetwork`
+    - Removed `easDeepLinkType`
+    - Removed `deepLink`
+    - Removed `frontendCanisterId`
+    - Removed `iiIntegrationCanisterId`
+  - Added simplified parameters:
+    - Added `iiIntegrationUrl`: Direct URL for II integration
+    - Added `deepLinkType`: Type-safe deep link configuration
+  - Updated documentation to reflect new parameter structure
+  - Improved type safety with `DeepLinkType` enum
+
+## [0.1.19] - 2025-05-11
 
 ### Changed
 
