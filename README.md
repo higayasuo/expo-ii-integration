@@ -34,12 +34,14 @@ npm install expo-ii-integration
   "@dfinity/agent",
   "@dfinity/identity",
   "canister-manager",
+  "expo-crypto-universal",
+  "expo-icp-app-connect",
+  "expo-icp-app-connect-helpers",
   "expo-icp-frontend-helpers",
   "expo-linking",
   "expo-router",
   "expo-storage-universal",
   "expo-web-browser",
-  "expo-crypto-universal",
   "react",
   "react-native"
 }
