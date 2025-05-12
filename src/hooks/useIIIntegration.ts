@@ -3,7 +3,6 @@ import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 
 import { initialize } from './helpers/initialize';
-import { handleURL } from './helpers/handleURL';
 import { Storage } from 'expo-storage-universal';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
@@ -13,9 +12,11 @@ import { login } from './helpers/login';
 import { LoginOuterParams } from '../types';
 import { logout } from './helpers/logout';
 import { IIIntegrationType } from '../types';
-import { dismissBrowser } from './helpers/dismissBrowser';
+import { dismissBrowser, handleURL } from 'expo-icp-app-connect';
 import { CryptoModule } from 'expo-crypto-universal';
 import { DeepLinkType } from 'expo-icp-frontend-helpers';
+import { ParamsWithSessionId } from 'expo-icp-app-connect-helpers';
+import { buildIdentityFromDelegation } from './helpers/buildIdentityFromDelegation';
 
 const NAMESPACE = 'expo-ii-integration';
 
@@ -43,6 +44,17 @@ type UseIIIntegrationParams = {
    * The crypto module.
    */
   cryptoModule: CryptoModule;
+};
+
+/**
+ * Represents the result of handling a URL.
+ *
+ * This type extends ParamsWithSessionId and adds a delegation property.
+ *
+ * @property {string} delegation - The delegation string extracted from the URL.
+ */
+type HandleURLResult = ParamsWithSessionId & {
+  delegation: string;
 };
 
 /**
@@ -105,20 +117,27 @@ export const useIIIntegration = ({
       return;
     }
 
-    handleURL({
+    handleURL<HandleURLResult>({
       url,
-      delegationStorage,
-      appKeyStorage,
       sessionIdStorage,
-      onSuccess: async () => {
-        setIsAuthenticated(true);
-        const path = await redirectPathStorage.find();
+      onSuccess: async ({ delegation }) => {
+        if (delegation) {
+          await buildIdentityFromDelegation({
+            delegation,
+            delegationStorage,
+            appKeyStorage,
+          });
 
-        if (path) {
-          router.replace(path);
+          console.log('Authenticated from delegation');
+          setIsAuthenticated(true);
+          const path = await redirectPathStorage.find();
+
+          if (path) {
+            router.replace(path);
+          }
+
+          dismissBrowser();
         }
-
-        dismissBrowser();
       },
       onError: setAuthError,
     });

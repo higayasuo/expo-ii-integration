@@ -25,6 +25,8 @@ export default defineConfig({
         'canister-manager',
         'expo-icp-frontend-helpers',
         'expo-crypto-universal',
+        'expo-icp-app-connect',
+        'expo-icp-app-connect-helpers',
       ],
     },
   },

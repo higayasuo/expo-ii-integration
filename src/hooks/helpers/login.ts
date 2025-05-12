@@ -1,10 +1,10 @@
 import { toHex } from '@dfinity/agent';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
-import { openBrowser } from './openBrowser';
+import { connectToApp } from 'expo-icp-app-connect';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { CryptoModule } from 'expo-crypto-universal';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
-import { DeepLinkType, updateParams } from 'expo-icp-frontend-helpers';
+import { DeepLinkType } from 'expo-icp-frontend-helpers';
 
 type LoginParams = {
   iiIntegrationUrl: string;
@@ -46,17 +46,28 @@ export const login = async ({
     const appKey = await Ed25519KeyIdentity.generate();
     await appKeyStorage.save(appKey);
     const pubkey = toHex(appKey.getPublicKey().toDer());
-    const sessionId = toHex((await cryptoModule.getRandomBytes(32)).buffer);
-    await sessionIdStorage.save(sessionId);
+    // const sessionId = toHex((await cryptoModule.getRandomBytes(32)).buffer);
+    // await sessionIdStorage.save(sessionId);
 
-    const url = new URL(iiIntegrationUrl);
-    updateParams(url.searchParams, {
-      pubkey,
-      deepLinkType,
-      sessionId,
+    // const url = new URL(iiIntegrationUrl);
+    // updateParams(url.searchParams, {
+    //   pubkey,
+    //   deepLinkType,
+    //   sessionId,
+    // });
+
+    //await openBrowser(url.toString());
+    await connectToApp({
+      url: iiIntegrationUrl,
+      params: {
+        pubkey,
+        deepLinkType,
+      },
+      redirectPath,
+      redirectPathStorage,
+      sessionIdStorage,
+      cryptoModule,
     });
-
-    await openBrowser(url.toString());
   } catch (error) {
     console.error('Login failed:', error);
     throw error;

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.21] - 2025-05-13
+
+### Changed
+
+- Refactored authentication flow using `expo-icp-app-connect`:
+  - Replaced direct browser handling with `connectToApp` function
+  - Removed manual URL parameter handling and browser management
+  - Simplified login process by delegating browser and deep link handling
+  - Improved type safety with `ParamsWithSessionId` type
+  - Updated tests to reflect new authentication flow
+
 ## [0.1.20] - 2025-05-12
 
 ### Changed

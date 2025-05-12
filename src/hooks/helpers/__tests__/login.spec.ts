@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { login } from '../login';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
-import { openBrowser } from '../openBrowser';
+import { connectToApp } from 'expo-icp-app-connect';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { CryptoModule } from 'expo-crypto-universal';
 import { DeepLinkType } from 'expo-icp-frontend-helpers';
 
-vi.mock('../openBrowser', () => ({
-  openBrowser: vi.fn(),
+vi.mock('expo-icp-app-connect', () => ({
+  connectToApp: vi.fn(),
 }));
 
 vi.mock('@dfinity/identity', () => ({
@@ -57,17 +57,24 @@ describe('login', () => {
     } as unknown as Ed25519KeyIdentity;
 
     vi.mocked(Ed25519KeyIdentity.generate).mockResolvedValue(mockAppKey);
-    vi.mocked(openBrowser).mockResolvedValue(undefined);
+    vi.mocked(connectToApp).mockResolvedValue('test');
 
     await login(mockParams);
 
     expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
-    expect(sessionIdStorage.save).toHaveBeenCalledWith(expect.any(String));
-    expect(openBrowser).toHaveBeenCalledWith(
-      expect.stringContaining('https://example.com'),
-    );
+    expect(connectToApp).toHaveBeenCalledWith({
+      url: 'https://example.com',
+      params: {
+        pubkey: '010203',
+        deepLinkType: 'modern',
+      },
+      redirectPath: '/dashboard',
+      redirectPathStorage,
+      sessionIdStorage,
+      cryptoModule,
+    });
   });
 
   it('should remove redirect path when not provided', async () => {
@@ -78,12 +85,23 @@ describe('login', () => {
     } as unknown as Ed25519KeyIdentity;
 
     vi.mocked(Ed25519KeyIdentity.generate).mockResolvedValue(mockAppKey);
-    vi.mocked(openBrowser).mockResolvedValue(undefined);
+    vi.mocked(connectToApp).mockResolvedValue('test');
 
     await login({ ...mockParams, redirectPath: undefined });
 
     expect(redirectPathStorage.remove).toHaveBeenCalled();
     expect(redirectPathStorage.save).not.toHaveBeenCalled();
+    expect(connectToApp).toHaveBeenCalledWith({
+      url: 'https://example.com',
+      params: {
+        pubkey: '010203',
+        deepLinkType: 'modern',
+      },
+      redirectPath: undefined,
+      redirectPathStorage,
+      sessionIdStorage,
+      cryptoModule,
+    });
   });
 
   it('should throw error when Ed25519KeyIdentity.generate fails', async () => {
@@ -96,8 +114,7 @@ describe('login', () => {
     expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).not.toHaveBeenCalled();
-    expect(sessionIdStorage.save).not.toHaveBeenCalled();
-    expect(openBrowser).not.toHaveBeenCalled();
+    expect(connectToApp).not.toHaveBeenCalled();
   });
 
   it('should throw error when appKeyStorage.save fails', async () => {
@@ -117,11 +134,10 @@ describe('login', () => {
     expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
-    expect(sessionIdStorage.save).not.toHaveBeenCalled();
-    expect(openBrowser).not.toHaveBeenCalled();
+    expect(connectToApp).not.toHaveBeenCalled();
   });
 
-  it('should throw error when openBrowser fails', async () => {
+  it('should throw error when connectToApp fails', async () => {
     const mockAppKey = {
       getPublicKey: () => ({
         toDer: () => new Uint8Array([1, 2, 3]),
@@ -132,16 +148,23 @@ describe('login', () => {
     (appKeyStorage.save as ReturnType<typeof vi.fn>).mockResolvedValue(
       undefined,
     );
-    vi.mocked(openBrowser).mockRejectedValue(new Error('Browser failed'));
+    vi.mocked(connectToApp).mockRejectedValue(new Error('Connection failed'));
 
-    await expect(login(mockParams)).rejects.toThrow('Browser failed');
+    await expect(login(mockParams)).rejects.toThrow('Connection failed');
 
     expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
-    expect(sessionIdStorage.save).toHaveBeenCalledWith(expect.any(String));
-    expect(openBrowser).toHaveBeenCalledWith(
-      expect.stringContaining('https://example.com'),
-    );
+    expect(connectToApp).toHaveBeenCalledWith({
+      url: 'https://example.com',
+      params: {
+        pubkey: '010203',
+        deepLinkType: 'modern',
+      },
+      redirectPath: '/dashboard',
+      redirectPathStorage,
+      sessionIdStorage,
+      cryptoModule,
+    });
   });
 });
