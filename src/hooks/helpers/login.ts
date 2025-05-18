@@ -6,7 +6,7 @@ import { CryptoModule } from 'expo-crypto-universal';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { DeepLinkType } from 'expo-icp-frontend-helpers';
 
-type LoginParams = {
+export type LoginParams = {
   iiIntegrationUrl: string;
   deepLinkType: DeepLinkType;
   redirectPath: string | undefined;
@@ -37,31 +37,16 @@ export const login = async ({
   try {
     console.log('Logging in');
 
-    if (redirectPath) {
-      await redirectPathStorage.save(redirectPath);
-    } else {
-      await redirectPathStorage.remove();
-    }
-
     const appKey = await Ed25519KeyIdentity.generate();
     await appKeyStorage.save(appKey);
     const pubkey = toHex(appKey.getPublicKey().toDer());
-    // const sessionId = toHex((await cryptoModule.getRandomBytes(32)).buffer);
-    // await sessionIdStorage.save(sessionId);
 
-    // const url = new URL(iiIntegrationUrl);
-    // updateParams(url.searchParams, {
-    //   pubkey,
-    //   deepLinkType,
-    //   sessionId,
-    // });
-
-    //await openBrowser(url.toString());
     await connectToApp({
       url: iiIntegrationUrl,
       params: {
         pubkey,
         deepLinkType,
+        pathname: '/',
       },
       redirectPath,
       redirectPathStorage,

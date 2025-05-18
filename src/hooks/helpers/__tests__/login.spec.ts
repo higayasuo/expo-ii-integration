@@ -61,7 +61,6 @@ describe('login', () => {
 
     await login(mockParams);
 
-    expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).toHaveBeenCalledWith({
@@ -69,6 +68,7 @@ describe('login', () => {
       params: {
         pubkey: '010203',
         deepLinkType: 'modern',
+        pathname: '/',
       },
       redirectPath: '/dashboard',
       redirectPathStorage,
@@ -77,7 +77,7 @@ describe('login', () => {
     });
   });
 
-  it('should remove redirect path when not provided', async () => {
+  it('should handle login without redirect path', async () => {
     const mockAppKey = {
       getPublicKey: () => ({
         toDer: () => new Uint8Array([1, 2, 3]),
@@ -89,13 +89,14 @@ describe('login', () => {
 
     await login({ ...mockParams, redirectPath: undefined });
 
-    expect(redirectPathStorage.remove).toHaveBeenCalled();
-    expect(redirectPathStorage.save).not.toHaveBeenCalled();
+    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
+    expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).toHaveBeenCalledWith({
       url: 'https://example.com',
       params: {
         pubkey: '010203',
         deepLinkType: 'modern',
+        pathname: '/',
       },
       redirectPath: undefined,
       redirectPathStorage,
@@ -111,7 +112,6 @@ describe('login', () => {
 
     await expect(login(mockParams)).rejects.toThrow('Generate failed');
 
-    expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).not.toHaveBeenCalled();
     expect(connectToApp).not.toHaveBeenCalled();
@@ -131,7 +131,6 @@ describe('login', () => {
 
     await expect(login(mockParams)).rejects.toThrow('Save failed');
 
-    expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).not.toHaveBeenCalled();
@@ -152,7 +151,6 @@ describe('login', () => {
 
     await expect(login(mockParams)).rejects.toThrow('Connection failed');
 
-    expect(redirectPathStorage.save).toHaveBeenCalledWith('/dashboard');
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).toHaveBeenCalledWith({
@@ -160,6 +158,7 @@ describe('login', () => {
       params: {
         pubkey: '010203',
         deepLinkType: 'modern',
+        pathname: '/',
       },
       redirectPath: '/dashboard',
       redirectPathStorage,
