@@ -36,7 +36,7 @@ describe('login', () => {
   } as unknown as CryptoModule;
 
   const mockParams = {
-    iiIntegrationUrl: 'https://example.com',
+    iiIntegrationUrl: new URL('https://example.com'),
     deepLinkType: 'modern' as DeepLinkType,
     redirectPath: '/dashboard',
     appKeyStorage,
@@ -64,7 +64,7 @@ describe('login', () => {
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).toHaveBeenCalledWith({
-      url: 'https://example.com',
+      url: new URL('https://example.com/'),
       params: {
         pubkey: '010203',
         deepLinkType: 'modern',
@@ -92,7 +92,7 @@ describe('login', () => {
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).toHaveBeenCalledWith({
-      url: 'https://example.com',
+      url: new URL('https://example.com/'),
       params: {
         pubkey: '010203',
         deepLinkType: 'modern',
@@ -154,7 +154,7 @@ describe('login', () => {
     expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
     expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
     expect(connectToApp).toHaveBeenCalledWith({
-      url: 'https://example.com',
+      url: new URL('https://example.com/'),
       params: {
         pubkey: '010203',
         deepLinkType: 'modern',

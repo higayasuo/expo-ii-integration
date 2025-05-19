@@ -27,7 +27,7 @@ type UseIIIntegrationParams = {
   /**
    * The II integration URL.
    */
-  iiIntegrationUrl: string;
+  iiIntegrationUrl: URL;
   /**
    * The deep link type.
    */
@@ -118,7 +118,7 @@ export const useIIIntegration = ({
     }
 
     handleURL<HandleURLResult>({
-      url,
+      url: new URL(url),
       sessionIdStorage,
       onSuccess: async ({ delegation }) => {
         if (delegation) {

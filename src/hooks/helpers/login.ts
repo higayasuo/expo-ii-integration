@@ -7,7 +7,7 @@ import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyI
 import { DeepLinkType } from 'expo-icp-frontend-helpers';
 
 export type LoginParams = {
-  iiIntegrationUrl: string;
+  iiIntegrationUrl: URL;
   deepLinkType: DeepLinkType;
   redirectPath: string | undefined;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
