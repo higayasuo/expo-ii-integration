@@ -34,27 +34,20 @@ export const login = async ({
   sessionIdStorage,
   cryptoModule,
 }: LoginParams): Promise<void> => {
-  try {
-    console.log('Logging in');
+  const appKey = await Ed25519KeyIdentity.generate();
+  await appKeyStorage.save(appKey);
+  const pubkey = toHex(appKey.getPublicKey().toDer());
 
-    const appKey = await Ed25519KeyIdentity.generate();
-    await appKeyStorage.save(appKey);
-    const pubkey = toHex(appKey.getPublicKey().toDer());
-
-    await connectToApp({
-      url: iiIntegrationUrl,
-      params: {
-        pubkey,
-        deepLinkType,
-        pathname: '/',
-      },
-      redirectPath,
-      redirectPathStorage,
-      sessionIdStorage,
-      cryptoModule,
-    });
-  } catch (error) {
-    console.error('Login failed:', error);
-    throw error;
-  }
+  await connectToApp({
+    url: iiIntegrationUrl,
+    params: {
+      pubkey,
+      deepLinkType,
+      pathname: '/',
+    },
+    redirectPath,
+    redirectPathStorage,
+    sessionIdStorage,
+    cryptoModule,
+  });
 };

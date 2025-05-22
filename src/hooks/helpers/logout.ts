@@ -19,12 +19,8 @@ export const logout = async ({
   delegationStorage,
   onFinally,
 }: LogoutParams): Promise<void> => {
-  console.log('Logging out');
   try {
     await delegationStorage.remove();
-  } catch (error) {
-    console.error('Logout failed:', error);
-    throw error;
   } finally {
     onFinally();
   }

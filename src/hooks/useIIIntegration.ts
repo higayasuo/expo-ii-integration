@@ -133,6 +133,7 @@ export const useIIIntegration = ({
           const path = await redirectPathStorage.find();
 
           if (path) {
+            console.log('Redirecting to', path);
             router.replace(path);
           }
 
@@ -140,6 +141,10 @@ export const useIIIntegration = ({
         }
       },
       onError: setAuthError,
+      onFinally: async () => {
+        await sessionIdStorage.remove();
+        await redirectPathStorage.remove();
+      },
     });
   }, [url]);
 
