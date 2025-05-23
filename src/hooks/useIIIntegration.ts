@@ -8,9 +8,9 @@ import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIden
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
 import { getIdentity } from './helpers/getIdentity';
-import { login, LoginParams } from './helpers/login';
+import { login } from './helpers/login';
 import { logout } from './helpers/logout';
-import { IIIntegrationType } from '../types';
+import { IIIntegrationType, LoginOuterParams } from '../types';
 import { dismissBrowser, handleURL } from 'expo-icp-app-connect';
 import { CryptoModule } from 'expo-crypto-universal';
 import { DeepLinkType } from 'expo-icp-frontend-helpers';
@@ -133,6 +133,7 @@ export const useIIIntegration = ({
 
           if (path) {
             console.log('Redirecting to', path);
+            await redirectPathStorage.remove();
             router.replace(path);
           }
 
@@ -140,10 +141,10 @@ export const useIIIntegration = ({
         }
       },
       onError: setAuthError,
-      onFinally: async () => {
-        await sessionIdStorage.remove();
-        await redirectPathStorage.remove();
-      },
+      // onFinally: async () => {
+      //   await sessionIdStorage.remove();
+      //   await redirectPathStorage.remove();
+      // },
     });
   }, [url]);
 
@@ -156,18 +157,7 @@ export const useIIIntegration = ({
         delegationStorage,
         onError: () => setIsAuthenticated(false),
       }),
-    login: ({
-      redirectPath,
-      openBrowserOptions,
-    }: Omit<
-      LoginParams,
-      | 'iiIntegrationUrl'
-      | 'deepLinkType'
-      | 'appKeyStorage'
-      | 'cryptoModule'
-      | 'redirectPathStorage'
-      | 'sessionIdStorage'
-    > = {}) =>
+    login: ({ redirectPath, openBrowserOptions }: LoginOuterParams = {}) =>
       login({
         iiIntegrationUrl,
         deepLinkType,

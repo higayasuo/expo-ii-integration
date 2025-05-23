@@ -39,6 +39,7 @@ export const login = async ({
   const appKey = await Ed25519KeyIdentity.generate();
   await appKeyStorage.save(appKey);
   const pubkey = toHex(appKey.getPublicKey().toDer());
+  console.log('login redirectPath', redirectPath);
 
   await connectToApp({
     url: iiIntegrationUrl,

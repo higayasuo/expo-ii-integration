@@ -9,10 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Improved URL handling in `useIIIntegration` hook:
-  - Added cleanup in `handleURL.onFinally` to remove session ID and redirect path
-  - Ensures proper cleanup of temporary data after URL handling
-  - Prevents stale data from affecting future authentication attempts
 - Updated `login` function to support browser options:
   - Added `openBrowserOptions` parameter to customize browser behavior
   - Uses `inNewTab` option from `expo-icp-app-connect` for better browser control

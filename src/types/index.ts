@@ -1,4 +1,5 @@
 import { Identity } from '@dfinity/agent';
+import { OpenBrowserOptions } from 'expo-icp-app-connect';
 
 /**
  * Represents the outer parameters for the login function.
@@ -6,6 +7,7 @@ import { Identity } from '@dfinity/agent';
  */
 export type LoginOuterParams = {
   redirectPath?: string;
+  openBrowserOptions?: OpenBrowserOptions;
 };
 
 /**
