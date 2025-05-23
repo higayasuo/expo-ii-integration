@@ -1,6 +1,6 @@
 import { toHex } from '@dfinity/agent';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
-import { connectToApp } from 'expo-icp-app-connect';
+import { connectToApp, OpenBrowserOptions } from 'expo-icp-app-connect';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { CryptoModule } from 'expo-crypto-universal';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../storage/Ed25519KeyIdentityValueStorageWrapper';
@@ -9,11 +9,12 @@ import { DeepLinkType } from 'expo-icp-frontend-helpers';
 export type LoginParams = {
   iiIntegrationUrl: URL;
   deepLinkType: DeepLinkType;
-  redirectPath: string | undefined;
+  redirectPath?: string;
   appKeyStorage: Ed25519KeyIdentityValueStorageWrapper;
   redirectPathStorage: StringValueStorageWrapper;
   sessionIdStorage: StringValueStorageWrapper;
   cryptoModule: CryptoModule;
+  openBrowserOptions?: OpenBrowserOptions;
 };
 
 /**
@@ -33,6 +34,7 @@ export const login = async ({
   redirectPathStorage,
   sessionIdStorage,
   cryptoModule,
+  openBrowserOptions = {},
 }: LoginParams): Promise<void> => {
   const appKey = await Ed25519KeyIdentity.generate();
   await appKeyStorage.save(appKey);
@@ -49,5 +51,6 @@ export const login = async ({
     redirectPathStorage,
     sessionIdStorage,
     cryptoModule,
+    openBrowserOptions,
   });
 };

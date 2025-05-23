@@ -8,7 +8,7 @@ import { Ed25519KeyIdentityValueStorageWrapper } from '../storage/Ed25519KeyIden
 import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainValueStorageWrapper';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
 import { getIdentity } from './helpers/getIdentity';
-import { login } from './helpers/login';
+import { login, LoginParams } from './helpers/login';
 import { LoginOuterParams } from '../types';
 import { logout } from './helpers/logout';
 import { IIIntegrationType } from '../types';
@@ -157,15 +157,27 @@ export const useIIIntegration = ({
         delegationStorage,
         onError: () => setIsAuthenticated(false),
       }),
-    login: (loginOuterParams: LoginOuterParams = {}) =>
+    login: ({
+      redirectPath,
+      openBrowserOptions,
+    }: Omit<
+      LoginParams,
+      | 'iiIntegrationUrl'
+      | 'deepLinkType'
+      | 'appKeyStorage'
+      | 'cryptoModule'
+      | 'redirectPathStorage'
+      | 'sessionIdStorage'
+    > = {}) =>
       login({
         iiIntegrationUrl,
         deepLinkType,
         appKeyStorage,
-        redirectPath: loginOuterParams.redirectPath,
+        redirectPath,
         redirectPathStorage,
         sessionIdStorage,
         cryptoModule,
+        openBrowserOptions,
       }),
     logout: () =>
       logout({

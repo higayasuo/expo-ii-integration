@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { login } from '../login';
 import { Ed25519KeyIdentityValueStorageWrapper } from '../../../storage/Ed25519KeyIdentityValueStorageWrapper';
 import { StringValueStorageWrapper } from 'expo-storage-universal';
-import { connectToApp } from 'expo-icp-app-connect';
+import { connectToApp, OpenBrowserOptions } from 'expo-icp-app-connect';
 import { Ed25519KeyIdentity } from '@dfinity/identity';
 import { CryptoModule } from 'expo-crypto-universal';
 import { DeepLinkType } from 'expo-icp-frontend-helpers';
@@ -74,6 +74,40 @@ describe('login', () => {
       redirectPathStorage,
       sessionIdStorage,
       cryptoModule,
+      openBrowserOptions: {},
+    });
+  });
+
+  it('should handle login with custom openBrowserOptions', async () => {
+    const mockAppKey = {
+      getPublicKey: () => ({
+        toDer: () => new Uint8Array([1, 2, 3]),
+      }),
+    } as unknown as Ed25519KeyIdentity;
+
+    const openBrowserOptions: OpenBrowserOptions = {
+      inNewTab: true,
+    };
+
+    vi.mocked(Ed25519KeyIdentity.generate).mockResolvedValue(mockAppKey);
+    vi.mocked(connectToApp).mockResolvedValue('test');
+
+    await login({ ...mockParams, openBrowserOptions });
+
+    expect(Ed25519KeyIdentity.generate).toHaveBeenCalled();
+    expect(appKeyStorage.save).toHaveBeenCalledWith(mockAppKey);
+    expect(connectToApp).toHaveBeenCalledWith({
+      url: new URL('https://example.com/'),
+      params: {
+        pubkey: '010203',
+        deepLinkType: 'modern',
+        pathname: '/',
+      },
+      redirectPath: '/dashboard',
+      redirectPathStorage,
+      sessionIdStorage,
+      cryptoModule,
+      openBrowserOptions,
     });
   });
 
@@ -102,6 +136,7 @@ describe('login', () => {
       redirectPathStorage,
       sessionIdStorage,
       cryptoModule,
+      openBrowserOptions: {},
     });
   });
 
@@ -164,6 +199,7 @@ describe('login', () => {
       redirectPathStorage,
       sessionIdStorage,
       cryptoModule,
+      openBrowserOptions: {},
     });
   });
 });
