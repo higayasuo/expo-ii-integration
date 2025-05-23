@@ -9,7 +9,6 @@ import { DelegationChainValueStorageWrapper } from '../storage/DelegationChainVa
 import { StringValueStorageWrapper } from 'expo-storage-universal';
 import { getIdentity } from './helpers/getIdentity';
 import { login, LoginParams } from './helpers/login';
-import { LoginOuterParams } from '../types';
 import { logout } from './helpers/logout';
 import { IIIntegrationType } from '../types';
 import { dismissBrowser, handleURL } from 'expo-icp-app-connect';
