@@ -120,25 +120,24 @@ export const useIIIntegration = ({
       url: new URL(url),
       sessionIdStorage,
       onSuccess: async ({ delegation }) => {
-        if (delegation) {
-          await buildIdentityFromDelegation({
-            delegation,
-            delegationStorage,
-            appKeyStorage,
-          });
+        await buildIdentityFromDelegation({
+          delegation,
+          delegationStorage,
+          appKeyStorage,
+        });
 
-          console.log('Authenticated from delegation');
-          setIsAuthenticated(true);
-          const path = await redirectPathStorage.find();
+        console.log('Authenticated from delegation');
+        setIsAuthenticated(true);
+        await sessionIdStorage.remove();
+        const path = await redirectPathStorage.find();
 
-          if (path) {
-            console.log('Redirecting to', path);
-            await redirectPathStorage.remove();
-            router.replace(path);
-          }
-
-          dismissBrowser();
+        if (path) {
+          console.log('Redirecting to', path);
+          await redirectPathStorage.remove();
+          router.replace(path);
         }
+
+        dismissBrowser();
       },
       onError: setAuthError,
       // onFinally: async () => {
